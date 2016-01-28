@@ -8,6 +8,7 @@ Required software: VirtualBox, Vagrant
 4. cd ..
 5. vagrant up
 6. vagrant ssh
-7. sudo 
+7. (optional) npm install
+8. sudo 
   * ```node www/app``` or
   * ```nodemon www/app```
