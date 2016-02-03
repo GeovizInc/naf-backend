@@ -4,7 +4,7 @@ Required software: VirtualBox, Vagrant
 
 1. Setup vagrant ```git clone https://github.com/hijaq/mean-vagrant.git```
 2. cd mean-vagrant/www
-3. Download backend code to local ```git clone https://github.com/nowanswers/nowansr.com.git .```
+3. Download backend code to local ```https://github.com/lkuo/naf-backend.git .```
 4. cd ..
 5. Turn on vm ```vagrant up```
 6. SSH to vm ```vagrant ssh```
