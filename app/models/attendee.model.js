@@ -16,8 +16,22 @@ var attendeeSchema = new Schema({
             type: Schema.Types.Date
         }
     }],
-    picture: {
+    imageLink: {
         type: Schema.Types.String
+    },
+    status: {
+        type: Schema.Types.Boolean,
+        default: true
+    },
+    createdAt: {
+        type: Schema.Types.Date
+    },
+    updatedAt: {
+        type: Schema.Types.Date
+    },
+    updatedBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'Credential'
     }
 });
 

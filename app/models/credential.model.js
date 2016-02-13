@@ -27,6 +27,16 @@ var credentialSchema = new Schema({
     teacher: {
         type: Schema.Types.ObjectId,
         ref: 'Teacher'
+    },
+    createdAt: {
+        type: Schema.Types.Date
+    },
+    updatedAt: {
+        type: Schema.Types.Date
+    },
+    updatedBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'Credential'
     }
 });
 
@@ -40,6 +50,7 @@ credentialSchema.options.toJSON.transform = function(doc, ret, options) {
 credentialSchema.plugin(deepPopulate, {} );
 
 credentialSchema.statics.checkEmailRegistered = checkEmailRegistered;
+credentialSchema.statics.register = register;
 
 module.exports = mongoose.model('Credential', credentialSchema);
 
@@ -52,4 +63,8 @@ function checkEmailRegistered(email, callback) {
         }
         callback(null);
     });
+}
+
+function register(params, callback) {
+    this.create(params, callback);
 }

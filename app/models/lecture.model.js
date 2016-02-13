@@ -18,18 +18,28 @@ var LectureSchema = new Schema({
     time: {
         type: Schema.Types.Date
     },
-    videoLink: {
+    vimeoLink: {
         type: Schema.Types.String
     },
-    streamLink: {
+    zoomLink: {
         type: Schema.Types.String
     },
-    picture: {
+    imageLink: {
         type: Schema.Types.String
     },
     status: {
         type: Schema.Types.Boolean,
         default: true
+    },
+    createdAt: {
+        type: Schema.Types.Date
+    },
+    updatedAt: {
+        type: Schema.Types.Date
+    },
+    updatedBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'Credential'
     }
 });
 
