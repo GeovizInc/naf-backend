@@ -1,43 +1,81 @@
 'use strict';
+var Credential = require('../../models/credential.model');
+
+var async = require('async');
 var assert = require('assert');
+var bcrypt = require('bcryptjs');
+var config = require('../../config');
+var constants = require('../../utils/constants');
+var mongoose = require('mongoose');
 var superagent = require('superagent');
-var api = 'http://localhost:8000/api/v1';
+
+var api = 'http://127.0.0.1:8000/api/v1';
+mongoose.connect(config.database);
 
 describe('/auth', function() {
+    var password = '1234';
+    var cred = new Credential({
+        email: '1@2.com',
+        password: bcrypt.hashSync(password),
+        userType: constants.PRESENTER
+    });
 
-    describe('/check', function() {
-        var user = {
-            email: '1@2.com',
-            password: '1234'
-        };
+    before(function(done) {
 
-        before(function(done) {
-            //save user
+        cred.save(function(err, savedCredential) {
+            assert.equal(false, err || !savedCredential);
+            cred = savedCredential;
+            done();
         });
 
-        after(function(done) {
-            // delete user
+    });
+
+    after(function(done) {
+        Credential
+            .find({})
+            .remove()
+            .exec(function(err, removedCredential) {
+                assert.equal(false, err || !removedCredential);
+                done();
+            });
+
+    });
+
+    describe('/check', function() {
+        it('should return 404 if not email is provided', function(done) {
+            superagent
+                .get(api + '/auth/email/' )
+                .end(function(err, res) {
+                    assert.equal(res.statusCode, 404);
+                    done();
+                });
         });
 
         it('should return true if an email address is registered', function(done) {
             superagent
-                .get(api + '/auth/check/' + user.email)
+                .get(api + '/auth/email/' + cred.email)
                 .end(function(err, res) {
-                    var actualResult = JSON.parse(res.text);
                     var expectedResult = {
                         status:  true
                     };
-
                     assert.equal(res.statusCode, 200);
-                    assert.deepEqual(actualResult, expectedResult);
-
+                    assert.deepEqual(res.body, expectedResult);
                     done();
                 });
         });
 
         it('should return false if an email is not registered', function(done) {
-
-        })
+            superagent
+                .get(api + '/auth/email/' + 'some@email.address')
+                .end(function(err, res) {
+                    var expectedResult = {
+                        status:  false
+                    };
+                    assert.equal(res.statusCode, 200);
+                    assert.deepEqual(res.body, expectedResult);
+                    done();
+                });
+        });
     });
 
     describe('/register', function() {
@@ -51,15 +89,27 @@ describe('/auth', function() {
                 .post(api + '/auth/register')
                 .send(user)
                 .end(function(err, res) {
-                    var actualResult = JSON.parse(res.text);
-
+                    assert.equal(err, null);
                     assert.equal(res.statusCode, 200);
+                    assert.notEqual(res.header['authorization'], undefined);
+                    assert.equal(res.body.email, user.email);
+                    assert.equal(res.body.userType, user.userType);
+                    done();
+                });
+        });
 
-                    assert.notEqual(res.header['Authorization'], null);
-                    assert.notEqual(res.header['Authorization'], '');
-
-                    assert.equal(actualResult.email, user.email);
-                    assert.equal(actualResult.userType, user.userType);
+        it('should return 403 if email is registered', function(done) {
+            var user = {
+                email: cred.email,
+                password: '1234',
+                userType: 'presenter'
+            };
+            superagent
+                .post(api + '/auth/register')
+                .send(user)
+                .end(function(err, res) {
+                    assert.notEqual(err, null);
+                    assert.equal(err.status, 403);
                     done();
                 });
         });
@@ -67,39 +117,118 @@ describe('/auth', function() {
 
     describe('/login', function() {
         it('should return 200 with user body and token in header', function(done) {
-            var data = {
-                email: user.email,
-                password: user.password
+            var user = {
+                email: 'login@test.com',
+                password: '1234',
+                userType: 'attendee'
             };
-            superagent
-                .post(api + '/auth/login')
-                .send(data)
-                .end(function(err, res) {
-                    var actualResult = JSON.parse(res.text);
 
-                    assert.equal(res.statusCode, 200);
+            async.waterfall([
+                register,
+                login,
+            ], function(err){
+                done();
+            });
 
-                    assert.notEqual(res.header['Authorization'], null);
-                    assert.notEqual(res.header['Authorization'], '');
+            function register(callback) {
+                superagent
+                    .post(api + '/auth/register')
+                    .send(user)
+                    .end(function(err, res) {
+                        assert.equal(err, null);
+                        assert.equal(res.statusCode, 200);
+                        assert.notEqual(res.header['authorization'], undefined);
+                        assert.equal(res.body.email, user.email);
+                        assert.equal(res.body.userType, user.userType);
+                        callback(null);
+                    });
+            }
 
-                    assert.equal(actualResult.email, user.email);
-                    assert.equal(actualResult.userType, user.userType);
-                    done();
-                });
+            function login(callback) {
+                superagent
+                    .post(api + '/auth/login')
+                    .send(user)
+                    .end(function(err, res) {
+                        assert.equal(res.statusCode, 200, JSON.stringify(err));
+                        assert.notEqual(res.header['authorization'], undefined);
+                        assert.equal(res.body.email, user.email);
+                        assert.equal(res.body.userType, user.userType, JSON.stringify(res.body));
+                        assert.notEqual(res.body[res.body.userType], undefined, JSON.stringify(res.body));
+                        assert.notEqual(res.body[res.body.userType], null);
+                        callback(null);
+                    });
+            }
+
         });
     });
 
     describe('/auth', function() {
+        var authHeader = null;
+        var changedPassword = '4321';
+        var id = null;
+
         it('should should return 200 without a message', function(done) {
-            superagent
-                .put(api + '/auth')
-                .end(function(err, res) {
-                    assert.equal(res.statusCode, 200);
-                    var actualResult = JSON.parse(res.text);
-                    var expectedResult = null;
-                    assert.deepEqual(actualResult, expectedResult);
-                    done();
-                });
+            var user = {
+                email: 'changePassword@test.com',
+                password: password,
+                userType: 'teacher'
+            };
+            async.waterfall([
+                register,
+                changePassword,
+                login
+            ], function(err) {
+                done();
+            });
+
+
+            function register(callback) {
+                superagent
+                    .post(api + '/auth/register')
+                    .send({
+                        email: user.email,
+                        password: '1234',
+                        userType: user.userType
+                    })
+                    .end(function(err, res) {
+                        assert.equal(err, null);
+                        assert.equal(res.statusCode, 200);
+                        authHeader = res.header['authorization'];
+                        user.id = res.body._id;
+                        callback(null);
+                    });
+            }
+
+            function changePassword(callback) {
+                var data = {
+                    id: user.id,
+                    password: changedPassword
+                };
+                superagent
+                    .put(api + '/auth')
+                    .set('Authorization', authHeader)
+                    .send(data)
+                    .end(function(err, res) {
+                        assert.equal(res.statusCode, 200, JSON.stringify(data));
+                        authHeader = res.header['authorization'];done();
+                        callback(null);
+                    });
+            }
+
+            function login(callback) {
+                superagent
+                    .post(api + '/auth/login')
+                    .send({
+                        email: user.email,
+                        password: changedPassword
+                    })
+                    .end(function(err, res) {
+                        authHeader = res.header['authorization'];
+                        assert.equal(err, null);
+                        callback(null);
+                    });
+            }
+
         });
     });
 });

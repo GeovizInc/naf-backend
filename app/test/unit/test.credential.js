@@ -34,21 +34,4 @@ describe('Credential Model', function() {
     describe('Dynamic functions', function() {
 
     });
-
-    describe('Static functions', function() {
-        describe('Check email registered', function() {
-            it('should pass null if an email address is not registered', function(done) {
-                Credential.checkEmailRegistered('', function(err) {
-                    assert.equal(err, null);
-                    done();
-                });
-            });
-            it('should pass error if email address is registered', function(done) {
-                Credential.checkEmailRegistered('guoliang133@gmail.com', function(err) {
-                    assert.notEqual(err, null);
-                    done();
-                });
-            })
-        });
-    });
 });

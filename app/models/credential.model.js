@@ -47,24 +47,21 @@ credentialSchema.options.toJSON.transform = function(doc, ret, options) {
     delete ret.__v;
 };
 
-credentialSchema.plugin(deepPopulate, {} );
+credentialSchema.pre('save', function(next){
+    var now = new Date();
+    this.updatedAt = now;
+    if (!this.createdAt ) {
+        this.createdAt = now;
+    }
+    next();
+});
+credentialSchema.pre('update', function() {
+    this.update({},{ $set: { updatedAt: new Date() } });
+});
 
-credentialSchema.statics.checkEmailRegistered = checkEmailRegistered;
-credentialSchema.statics.register = register;
+
+credentialSchema.plugin(deepPopulate, {} );
 
 module.exports = mongoose.model('Credential', credentialSchema);
 
-function checkEmailRegistered(email, callback) {
-    this.findOne({
-        email: email
-    }, function(err, credential) {
-        if(err || credential) {
-            callback(['Email is registered']);
-        }
-        callback(null);
-    });
-}
 
-function register(params, callback) {
-    this.create(params, callback);
-}
