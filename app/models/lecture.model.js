@@ -4,6 +4,12 @@ var Schema = mongoose.Schema;
 var deepPopulate = require('mongoose-deep-populate')(mongoose);
 
 var LectureSchema = new Schema({
+    name: {
+        type: String
+    },
+    description: {
+        type: String
+    },
     teacher: {
         type: Schema.Types.ObjectId,
         ref: 'Teacher'
@@ -20,16 +26,16 @@ var LectureSchema = new Schema({
         type: Schema.Types.Date
     },
     vimeoLink: {
-        type: Schema.Types.String
+        type: String
     },
     zoomLink: {
-        type: Schema.Types.String
+        type: String
     },
     imageLink: {
-        type: Schema.Types.String
+        type: String
     },
     status: {
-        type: Schema.Types.Boolean,
+        type: Boolean,
         default: true
     },
     createdAt: {

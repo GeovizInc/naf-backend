@@ -18,14 +18,6 @@ var teacherSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Presenter'
     },
-    courses: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Course'
-    }],
-    lectures: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Lecture'
-    }],
     imageLink: {
         type: String
     },

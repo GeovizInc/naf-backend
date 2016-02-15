@@ -14,18 +14,6 @@ var presenterSchema = new Schema({
     description: {
         type: String
     },
-    teachers: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Teacher'
-    }],
-    courses: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Course'
-    }],
-    lectures: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Lecture'
-    }],
     imageLink: {
         type: String
     },

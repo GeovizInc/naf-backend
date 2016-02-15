@@ -10,14 +10,6 @@ var courseSchema = new Schema({
     description: {
         type: String
     },
-    lectures: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Lecture'
-    }],
-    teachers: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Teacher'
-    }],
     presenter: {
         type: Schema.Types.ObjectId,
         ref: 'Presenter'
