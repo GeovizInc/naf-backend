@@ -23,6 +23,12 @@ describe('/course', function() {
         userType: constants.PRESENTER
     };
 
+    var teacher = {
+        email: 'teacher@email.com',
+        password: '1234',
+        userType: constants.TEACHER
+    };
+
     var course = {
         name: 'test course',
         description: 'test course description',
@@ -36,7 +42,8 @@ describe('/course', function() {
     before(function(done) {
         async.waterfall([
             connectDB,
-            registerPresenter
+            registerPresenter,
+            registerTeacher
         ], function(err) {
             done();
         });
@@ -54,6 +61,17 @@ describe('/course', function() {
                     assert.equal(err, null);
                     presenter = res.body;
                     presenterAuthHeader = res.header['authorization'];
+                    callback(null);
+                });
+        }
+
+        function registerTeacher(callback) {
+            superagent
+                .post(api + '/auth/register')
+                .send(teacher)
+                .end(function(err, res) {
+                    assert.equal(err, null);
+                    teacher = res.body;
                     callback(null);
                 });
         }
@@ -169,6 +187,69 @@ describe('/course', function() {
                     assert.equal(res.body.imageLink, imageLink);
                     done();
                 });
+        });
+    });
+
+    describe('GET /course/:courseId/lectures', function() {
+        it('shoudl return an array of lectures', function(done) {
+            var lectures = [
+                {
+                    name: 'lecture1',
+                    time: new Date(),
+                    description: 'description1',
+                    teacher: teacher._id,
+                    course: course._id
+                },
+                {
+                    name: 'lecture2',
+                    time: new Date(),
+                    description: 'description2',
+                    teacher: teacher._id,
+                    course: course._id
+                },
+                {
+                    name: 'lecture3',
+                    time: new Date(),
+                    description: 'description3',
+                    teacher: teacher._id,
+                    course: course._id
+                }
+            ];
+
+            createLectures(function() {
+                superagent
+                    .get(api + '/course/' + course._id + '/lectures')
+                    .set('Authorization', presenterAuthHeader)
+                    .end(function(err, res) {
+                        assert.equal(err, null, JSON.stringify(err, null, '\t'));
+                        assert.equal(res.body.length, 3);
+                        done();
+                    });
+            });
+
+
+            function createLectures(callback) {
+                async.each(
+                    lectures,
+                    createLecture,
+                    function(err) {
+                        assert.equal(err, null);
+                        callback();
+                    }
+                );
+            }
+
+
+            function createLecture(lecture, callback) {
+                superagent
+                    .post(api + '/lecture')
+                    .set('Authorization', presenterAuthHeader)
+                    .send(lecture)
+                    .end(function(err, res) {
+                        assert.equal(err, null, JSON.stringify(err, null, '\t'));
+                        callback(null);
+                    });
+            }
         });
     });
 

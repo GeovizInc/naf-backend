@@ -1,15 +1,79 @@
 'use strict';
 var Credential = require('../models/credential.model');
 var Course = require('../models/course.model');
+var Lecture = require('../models/lecture.model');
 var sanitize = require('mongo-sanitize');
 var async = require('async');
 var constants = require('../utils/constants');
 
 module.exports.getCourse = getCourse;
-module.exports.getLectures = placeholder;
+module.exports.getLectures = getLectures;
 module.exports.create = create;
 module.exports.update = update;
 module.exports.delete = deleteCourse;
+
+function getLectures(req, res) {
+    async.waterfall([
+        validateRequest,
+        findLectures
+    ], function(err, lectures) {
+        if(err) {
+            return res
+                .status(err.status)
+                .json({
+                    message: err.message
+                });
+        }
+
+        var result = [];
+
+        lectures.forEach(function(lecture) {
+            result.push({
+                _id: lecture._id,
+                name: lecture.name,
+                description: lecture.description,
+                time: lecture.time,
+                teacher: {
+                    _id: lecture.teacher._id,
+                    name: lecture.teacher.name
+                }
+            });
+        });
+
+        return res
+            .status(200)
+            .json(result);
+    });
+
+    function validateRequest(callback) {
+        req.checkParams('courseId', 'Course Id is requested').isMongoId();
+        var errors = req.validationErrors();
+        if(errors) {
+            return callback({
+                status: 400,
+                message: errors[0]['error']
+            });
+        }
+        req.params = sanitize(req.params);
+        callback(null);
+    }
+
+    function findLectures(callback) {
+        Lecture
+            .find({
+                course: req.params.courseId,
+                status: true
+            })
+            .populate('teacher')
+            .sort('-date')
+            .exec(function(err, lectures) {
+                if(err) {
+                    return res.sendStatus(500);
+                }
+                callback(null, lectures);
+            });
+    }
+}
 
 function getCourse(req, res) {
     async.waterfall([
@@ -346,12 +410,4 @@ function deleteCourse(req, res) {
                 callback(null, course);
             });
     }
-}
-
-function placeholder(req, res) {
-    return res
-        .status(500)
-        .json({
-            message: 'under construction'
-        });
 }
