@@ -1,8 +1,15 @@
 'use strict';
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var deepPopulate = require('mongoose-deep-populate')(mongoose);
 
 var courseSchema = new Schema({
+    name: {
+        type: String
+    },
+    description: {
+        type: String
+    },
     lectures: [{
         type: Schema.Types.ObjectId,
         ref: 'Lecture'
@@ -16,10 +23,10 @@ var courseSchema = new Schema({
         ref: 'Presenter'
     },
     imageLink: {
-        type: Schema.Types.String
+        type: String
     },
     status: {
-        type: Schema.Types.Boolean,
+        type: Boolean,
         default: true
     },
     createdAt: {

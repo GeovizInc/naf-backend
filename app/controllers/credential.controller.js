@@ -74,6 +74,10 @@ function register(req, res) {
         req.checkBody('userType', 'User type is required')
             .notEmpty()
             .isIn([constants.ATTENDEE, constants.PRESENTER, constants.TEACHER]);
+        var userType = req.sanitize(req.body.userType);
+        if(userType === constants.TEACHER) {
+            req.checkBody('presenter', 'Presenter Id is required').notEmpty().isMongoId();
+        }
         var errors = req.validationErrors();
         if(errors) {
             return callback({
@@ -82,6 +86,7 @@ function register(req, res) {
             });
         }
         req.body = sanitize(req.body);
+
         callback(null);
     }
 
@@ -110,7 +115,7 @@ function register(req, res) {
             userType: req.body.userType
         });
         var user = req.body.userType == constants.ATTENDEE ? new Attendee({}) :
-                   req.body.userType == constants.PRESENTER ? new Presenter({}) : new Teacher({});
+                   req.body.userType == constants.PRESENTER ? new Presenter({}) : new Teacher({presenter: req.body.presenter});
 
         async.waterfall([
             saveCredential,

@@ -8,6 +8,12 @@ var presenterSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Credential'
     },
+    name: {
+        type: String
+    },
+    description: {
+        type: String
+    },
     teachers: [{
         type: Schema.Types.ObjectId,
         ref: 'Teacher'
@@ -21,10 +27,10 @@ var presenterSchema = new Schema({
         ref: 'Lecture'
     }],
     imageLink: {
-        type: Schema.Types.String
+        type: String
     },
     status: {
-        type: Schema.Types.Boolean,
+        type: Boolean,
         default: true
     },
     createdAt: {
@@ -43,8 +49,20 @@ if (!presenterSchema.options.toJSON) {
     presenterSchema.options.toJSON = {};
 }
 presenterSchema.options.toJSON.transform = function(doc, ret, options) {
-    delete ret.__v;
+    delete ret._v;
 };
+
+presenterSchema.pre('save', function(next){
+    var now = new Date();
+    this.updatedAt = now;
+    if (!this.createdAt ) {
+        this.createdAt = now;
+    }
+    next();
+});
+presenterSchema.pre('updatePresenter', function() {
+    this.updatePresenter({},{ $set: { updatedAt: new Date() } });
+});
 
 presenterSchema.plugin(deepPopulate, {} );
 

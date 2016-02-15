@@ -44,7 +44,7 @@ if (!credentialSchema.options.toJSON) {
     credentialSchema.options.toJSON = {};
 }
 credentialSchema.options.toJSON.transform = function(doc, ret, options) {
-    delete ret.__v;
+    delete ret._v;
 };
 
 credentialSchema.pre('save', function(next){
@@ -55,8 +55,8 @@ credentialSchema.pre('save', function(next){
     }
     next();
 });
-credentialSchema.pre('update', function() {
-    this.update({},{ $set: { updatedAt: new Date() } });
+credentialSchema.pre('updatePresenter', function() {
+    this.updatePresenter({},{ $set: { updatedAt: new Date() } });
 });
 
 

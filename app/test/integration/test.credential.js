@@ -1,5 +1,8 @@
 'use strict';
 var Credential = require('../../models/credential.model');
+var Presenter = require('../../models/presenter.model');
+var Teacher = require('../../models/teacher.model');
+var Attendee = require('../../models/attendee.model');
 
 var async = require('async');
 var assert = require('assert');
@@ -10,7 +13,6 @@ var mongoose = require('mongoose');
 var superagent = require('superagent');
 
 var api = 'http://127.0.0.1:8000/api/v1';
-mongoose.connect(config.database);
 
 describe('/auth', function() {
     var password = '1234';
@@ -21,7 +23,7 @@ describe('/auth', function() {
     });
 
     before(function(done) {
-
+        mongoose.connect(config.database);
         cred.save(function(err, savedCredential) {
             assert.equal(false, err || !savedCredential);
             cred = savedCredential;
@@ -31,14 +33,36 @@ describe('/auth', function() {
     });
 
     after(function(done) {
-        Credential
-            .find({})
-            .remove()
-            .exec(function(err, removedCredential) {
-                assert.equal(false, err || !removedCredential);
-                done();
-            });
+        var models = [Credential, Attendee, Teacher, Presenter];
+        async.waterfall([
+            clearDB,
+            closeDBConnection
+        ], function(err) {
+            done();
+        });
 
+        function clearDB(callback) {
+            async.each(
+                models,
+                function(model, callback) {
+                    model
+                        .find({})
+                        .remove()
+                        .exec(function(err, removedCredential) {
+                            assert.equal(false, err || !removedCredential);
+                            callback(null);
+                        });
+                },
+                function(err) {
+                    callback(null);
+                }
+            );
+        }
+
+        function closeDBConnection(callback) {
+            mongoose.connection.close();
+            callback();
+        }
     });
 
     describe('/check', function() {
@@ -171,7 +195,7 @@ describe('/auth', function() {
             var user = {
                 email: 'changePassword@test.com',
                 password: password,
-                userType: 'teacher'
+                userType: 'presenter'
             };
             async.waterfall([
                 register,
@@ -210,7 +234,7 @@ describe('/auth', function() {
                     .send(data)
                     .end(function(err, res) {
                         assert.equal(res.statusCode, 200, JSON.stringify(data));
-                        authHeader = res.header['authorization'];done();
+                        authHeader = res.header['authorization'];
                         callback(null);
                     });
             }
