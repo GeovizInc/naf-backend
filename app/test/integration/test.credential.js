@@ -241,6 +241,7 @@ describe('/auth', function() {
         });
 
         it('should should return 200 without a message', function(done) {
+
             superagent
                 .post(api + '/auth/login')
                 .send({
@@ -250,9 +251,8 @@ describe('/auth', function() {
                 .end(function(err, res) {
                     authHeader = res.header['authorization'];
                     assert.equal(err, null);
-                    callback(null);
+                    done();
                 });
-
         });
     });
 });

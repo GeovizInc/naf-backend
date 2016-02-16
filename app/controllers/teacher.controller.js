@@ -92,7 +92,6 @@ function getCourses(req, res) {
                     if(err) {
                         return res.sendStatus(500);
                     }
-                    console.log(courses);
                     callback(null, courses);
                 });
         }
