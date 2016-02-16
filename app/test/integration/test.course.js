@@ -191,7 +191,7 @@ describe('/course', function() {
     });
 
     describe('GET /course/:courseId/lectures', function() {
-        it('shoudl return an array of lectures', function(done) {
+        before(function(done) {
             var lectures = [
                 {
                     name: 'lecture1',
@@ -216,29 +216,14 @@ describe('/course', function() {
                 }
             ];
 
-            createLectures(function() {
-                superagent
-                    .get(api + '/course/' + course._id + '/lectures')
-                    .set('Authorization', presenterAuthHeader)
-                    .end(function(err, res) {
-                        assert.equal(err, null, JSON.stringify(err, null, '\t'));
-                        assert.equal(res.body.length, 3);
-                        done();
-                    });
-            });
-
-
-            function createLectures(callback) {
-                async.each(
-                    lectures,
-                    createLecture,
-                    function(err) {
-                        assert.equal(err, null);
-                        callback();
-                    }
-                );
-            }
-
+            async.each(
+                lectures,
+                createLecture,
+                function(err) {
+                    assert.equal(err, null);
+                    done();
+                }
+            );
 
             function createLecture(lecture, callback) {
                 superagent
@@ -250,6 +235,17 @@ describe('/course', function() {
                         callback(null);
                     });
             }
+        });
+        it('shoudl return an array of lectures', function(done) {
+            superagent
+            .get(api + '/course/' + course._id + '/lectures')
+            .set('Authorization', presenterAuthHeader)
+            .end(function(err, res) {
+                assert.equal(err, null, JSON.stringify(err, null, '\t'));
+                assert.equal(res.body.length, 3);
+                done();
+
+            });
         });
     });
 

@@ -191,16 +191,16 @@ describe('/auth', function() {
         var changedPassword = '4321';
         var id = null;
 
-        it('should should return 200 without a message', function(done) {
-            var user = {
-                email: 'changePassword@test.com',
-                password: password,
-                userType: 'presenter'
-            };
+        var user = {
+            email: 'changePassword@test.com',
+            password: password,
+            userType: 'presenter'
+        };
+
+        before(function(done) {
             async.waterfall([
                 register,
-                changePassword,
-                login
+                changePassword
             ], function(err) {
                 done();
             });
@@ -238,20 +238,20 @@ describe('/auth', function() {
                         callback(null);
                     });
             }
+        });
 
-            function login(callback) {
-                superagent
-                    .post(api + '/auth/login')
-                    .send({
-                        email: user.email,
-                        password: changedPassword
-                    })
-                    .end(function(err, res) {
-                        authHeader = res.header['authorization'];
-                        assert.equal(err, null);
-                        callback(null);
-                    });
-            }
+        it('should should return 200 without a message', function(done) {
+            superagent
+                .post(api + '/auth/login')
+                .send({
+                    email: user.email,
+                    password: changedPassword
+                })
+                .end(function(err, res) {
+                    authHeader = res.header['authorization'];
+                    assert.equal(err, null);
+                    callback(null);
+                });
 
         });
     });

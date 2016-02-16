@@ -1,15 +1,195 @@
 'use strict';
 var Credential = require('../models/credential.model');
+var Course = require('../models/course.model');
+var Lecture = require('../models/lecture.model');
 var Presenter = require('../models/presenter.model');
+var Teacher = require('../models/teacher.model');
 var sanitize = require('mongo-sanitize');
 var async = require('async');
 var constants = require('../utils/constants');
 
 module.exports.getPresenter = getPresenter;
-module.exports.getTeachers = placeholder;
-module.exports.getCourses = placeholder;
-module.exports.getLectures = placeholder;
+module.exports.getTeachers = getTeachers;
+module.exports.getCourses = getCourses;
+module.exports.getLectures = getLectures;
 module.exports.update = updatePresenter;
+
+function getLectures (req, res) {
+    async.waterfall([
+        validateRequest,
+        findLectures
+    ], function(err, lectures) {
+        if(err) {
+            return res
+                .status(err.status)
+                .json({
+                    message: err.message
+                });
+        }
+
+        var result = [];
+        lectures.forEach(function(lecture) {
+            result.push({
+                _id: lecture._id,
+                name: lecture.name,
+                description: lecture.description,
+                time: lecture.time,
+                course: {
+                    _id: lecture.course._id,
+                    name: lecture.course.name
+                },
+                teacher: {
+                    _id: lecture.teacher._id,
+                    name: lecture.teacher.name
+                }
+            });
+        });
+
+        return res
+            .status(200)
+            .json(result);
+    });
+
+    function validateRequest(callback) {
+        req.checkParams('presenterId', 'Presenter Id is requested').isMongoId();
+        var errors = req.validationErrors();
+        if(errors) {
+            return callback({
+                status: 400,
+                message: errors[0]['error']
+            });
+        }
+        req.params = sanitize(req.params);
+        callback(null);
+    }
+
+    function findLectures(callback) {
+        Lecture
+            .find({
+                presenter: req.params.presenterId,
+                status: true
+            })
+            .populate('course teacher')
+            .exec(function(err, lectures) {
+                if(err) {
+                    return res.sendStatus(500);
+                }
+                callback(null, lectures);
+            });
+    }
+}
+
+function getCourses(req, res) {
+    async.waterfall([
+        validateRequest,
+        findCourses
+    ], function(err, courses) {
+        if(err) {
+            return res
+                .status(err.status)
+                .json({
+                    message: err.message
+                });
+        }
+
+        var result = [];
+        courses.forEach(function(course) {
+            result.push({
+                _id: course._id,
+                name: course.name,
+                description: course.description,
+                imageLink: course.imageLink
+            });
+        });
+
+        return res
+            .status(200)
+            .json(result);
+    });
+
+    function validateRequest(callback) {
+        req.checkParams('presenterId', 'Presenter Id is requested').isMongoId();
+        var errors = req.validationErrors();
+        if(errors) {
+            return callback({
+                status: 400,
+                message: errors[0]['error']
+            });
+        }
+        req.params = sanitize(req.params);
+        callback(null);
+    }
+
+    function findCourses(callback) {
+        Course
+            .find({
+                presenter: req.params.presenterId,
+                status: true
+            })
+            .exec(function(err, courses) {
+                if(err) {
+                    return res.sendStatus(500);
+                }
+                callback(null, courses);
+            });
+    }
+}
+
+function getTeachers(req, res) {
+    async.waterfall([
+        validateRequest,
+        findTeachers
+    ], function(err, teachers) {
+        if(err) {
+            return res
+                .status(err.status)
+                .json({
+                    message: err.message
+                });
+        }
+
+        var result = [];
+        teachers.forEach(function(teacher) {
+            result.push({
+                _id: teacher._id,
+                name: teacher.name,
+                description: teacher.description,
+                imageLink: teacher.imageLink
+            });
+        });
+
+        return res
+            .status(200)
+            .json(result);
+    });
+
+    function validateRequest(callback) {
+        req.checkParams('presenterId', 'Presenter Id is requested').isMongoId();
+        var errors = req.validationErrors();
+        if(errors) {
+            return callback({
+                status: 400,
+                message: errors[0]['error']
+            });
+        }
+        req.params = sanitize(req.params);
+        callback(null);
+    }
+
+    function findTeachers(callback) {
+        Teacher
+            .find({
+                presenter: req.params.presenterId,
+                status: true
+            })
+            .exec(function(err, teachers) {
+                if(err) {
+                    return res.sendStatus(500);
+                }
+                callback(null, teachers);
+            });
+    }
+}
 
 function updatePresenter(req, res) {
     async.waterfall([

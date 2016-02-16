@@ -134,5 +134,216 @@ describe('/presenter', function() {
         });
     });
 
+    describe('GET /:presenterId/teachers', function() {
+        var teacher = {
+            email: 'teacher@test.com',
+            password: '1234',
+            userType: constants.TEACHER
+        };
 
+        var pst = {
+            email: 'another@presenter.com',
+            password: '1234',
+            userType: constants.PRESENTER
+        };
+        before(function(done) {
+            async.waterfall([
+                registerPresenter,
+                registerTeachers,
+            ], function(err) {
+                done();
+            });
+
+            function registerPresenter(callback) {
+                superagent
+                    .post(api + '/auth/register')
+                    .send(pst)
+                    .end(function(err, res) {
+                        assert.equal(err, null);
+                        pst = res.body;
+                        callback(null);
+                    });
+            }
+
+            function registerTeachers(callback) {
+                superagent
+                    .post(api + '/auth/register')
+                    .send({
+                        email: teacher.email,
+                        password: teacher.password,
+                        userType: constants.TEACHER,
+                        presenter: pst._id
+                    })
+                    .end(function(err, res) {
+                        assert.equal(err, null);
+                        teacher = res.body;
+                        callback(null);
+                    });
+            }
+        });
+
+        it('should return an array of teachers', function(done) {
+            superagent
+                .get(api + '/presenter/' + pst._id + '/teachers')
+                .set('Authorization', authHeader)
+                .end(function(err, res) {
+                    assert.equal(err, null, JSON.stringify(err, null, '\t'));
+                    assert.equal(res.body.length, 1);
+                    done();
+                });
+        });
+    });
+
+    describe('GET /:presenterId/courses', function() {
+
+        var pst = {
+            email: 'another2@presenter.com',
+            password: '1234',
+            userType: constants.PRESENTER
+        };
+
+        var pstAuth = null;
+        before(function(done) {
+            async.waterfall([
+                registerPresenter,
+                createCourses
+            ], function(err) {
+                done();
+            });
+
+            function registerPresenter(callback) {
+                superagent
+                    .post(api + '/auth/register')
+                    .send(pst)
+                    .end(function(err, res) {
+                        assert.equal(err, null);
+                        pst = res.body;
+                        pstAuth = res.headers['authorization'];
+                        callback(null);
+                    });
+            }
+
+            function createCourses(callback) {
+                superagent
+                    .post(api + '/course')
+                    .set('Authorization', pstAuth)
+                    .send({
+                        name: 'course name',
+                        description: 'course description',
+                        imageLink: 'some link'
+                    })
+                    .end(function(err, res) {
+                        assert.equal(err, null, JSON.stringify(err, null, '\t'));
+                        callback(null);
+                    });
+            }
+        });
+
+        it('should return an array of teachers', function(done) {
+            superagent
+                .get(api + '/presenter/' + pst._id + '/courses')
+                .set('Authorization', authHeader)
+                .end(function(err, res) {
+                    assert.equal(err, null, JSON.stringify(err, null, '\t'));
+                    assert.equal(res.body.length, 1);
+                    done();
+                });
+        });
+    });
+
+    describe('GET /:presenterId/lectures', function() {
+        var teacher = {
+            email: 'teacher2@test.com',
+            password: '1234',
+            userType: constants.TEACHER
+        };
+
+        var pst = {
+            email: 'another3@presenter.com',
+            password: '1234',
+            userType: constants.PRESENTER
+        };
+
+        var course = {
+            name: 'course name',
+            description: 'course description',
+            imageLink: 'some link'
+        };
+
+        var pstAuth = null;
+        before(function(done) {
+            async.waterfall([
+                registerPresenter,
+                registerTeacher,
+                createCourses,
+                createLecture
+            ], function(err) {
+                done();
+            });
+
+            function registerPresenter(callback) {
+                superagent
+                    .post(api + '/auth/register')
+                    .send(pst)
+                    .end(function(err, res) {
+                        assert.equal(err, null);
+                        pst = res.body;
+                        pstAuth = res.headers['authorization'];
+                        callback(null);
+                    });
+            }
+
+            function registerTeacher(callback) {
+                teacher.presenter = pst._id;
+                superagent
+                    .post(api + '/auth/register')
+                    .send(teacher)
+                    .end(function(err, res) {
+                        assert.equal(err, null);
+                        teacher = res.body;
+                        callback(null);
+                    });
+            }
+
+            function createCourses(callback) {
+                superagent
+                    .post(api + '/course')
+                    .set('Authorization', pstAuth)
+                    .send(course)
+                    .end(function(err, res) {
+                        assert.equal(err, null, JSON.stringify(err, null, '\t'));
+                        course = res.body;
+                        callback(null);
+                    });
+            }
+
+            function createLecture(callback) {
+                superagent
+                    .post(api + '/lecture')
+                    .set('Authorization', pstAuth)
+                    .send({
+                        name: 'lecture name',
+                        time: new Date(),
+                        description: 'lecture description',
+                        teacher: teacher._id,
+                        course: course._id
+                    })
+                    .end(function(err, res) {
+                        assert.equal(err, null, JSON.stringify(err, null, '\t'));
+                        callback(null);
+                    });
+            }
+        });
+
+        it('should return an array of teachers', function(done) {
+            superagent
+                .get(api + '/presenter/' + pst._id + '/lectures')
+                .set('Authorization', authHeader)
+                .end(function(err, res) {
+                    assert.equal(err, null, JSON.stringify(err, null, '\t'));
+                    assert.equal(res.body.length, 1);
+                    done();
+                });
+        });
+    });
 });
