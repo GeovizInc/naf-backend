@@ -27,6 +27,11 @@ describe('/teacher', function() {
         password: '1234',
         userType: constants.TEACHER
     };
+    var course = {
+        name: 'test course',
+        description: 'test course description',
+        imageLink: 'http://testcourselink.com'
+    };
     var authHeader = '';
     var presenterAuthHeader = '';
 
@@ -34,7 +39,8 @@ describe('/teacher', function() {
         async.waterfall([
             connectDB,
             registerPresenter,
-            registerTeacher
+            registerTeacher,
+            createCourse
         ], function(err) {
             done();
         });
@@ -65,6 +71,18 @@ describe('/teacher', function() {
                     assert.equal(err, null);
                     teacher = res.body;
                     authHeader = res.header['authorization'];
+                    callback(null);
+                });
+        }
+
+        function createCourse(callback) {
+            superagent
+                .post(api + '/course')
+                .set('Authorization', presenterAuthHeader)
+                .send(course)
+                .end(function(err, res) {
+                    assert.equal(err, null, JSON.stringify(err, null, '\t'));
+                    course = res.body;
                     callback(null);
                 });
         }
@@ -145,6 +163,82 @@ describe('/teacher', function() {
                     assert.equal(res.body.name, teacher.name);
                     assert.equal(res.body.description, teacher.description);
                     assert.equal(res.body.imageLink, teacher.imageLink);
+                    done();
+                });
+        });
+    });
+
+    describe('GET /teacher/:teacherId/lectures', function() {
+        it('shoudl return an array of lectures', function(done) {
+            var lectures = [
+                {
+                    name: 'lecture1',
+                    time: new Date(),
+                    description: 'description1',
+                    teacher: teacher._id,
+                    course: course._id
+                },
+                {
+                    name: 'lecture2',
+                    time: new Date(),
+                    description: 'description2',
+                    teacher: teacher._id,
+                    course: course._id
+                },
+                {
+                    name: 'lecture3',
+                    time: new Date(),
+                    description: 'description3',
+                    teacher: teacher._id,
+                    course: course._id
+                }
+            ];
+
+            createLectures(function() {
+                superagent
+                    .get(api + '/teacher/' + teacher._id + '/lectures')
+                    .set('Authorization', presenterAuthHeader)
+                    .end(function(err, res) {
+                        assert.equal(err, null, JSON.stringify(err, null, '\t'));
+                        assert.equal(res.body.length, 3);
+                        done();
+                    });
+            });
+
+
+            function createLectures(callback) {
+                async.each(
+                    lectures,
+                    createLecture,
+                    function(err) {
+                        assert.equal(err, null);
+                        callback();
+                    }
+                );
+            }
+
+
+            function createLecture(lecture, callback) {
+                superagent
+                    .post(api + '/lecture')
+                    .set('Authorization', presenterAuthHeader)
+                    .send(lecture)
+                    .end(function(err, res) {
+                        assert.equal(err, null, JSON.stringify(err, null, '\t'));
+                        callback(null);
+                    });
+            }
+        });
+    });
+
+    describe('GET /teacher/:teacherId/courses', function() {
+        it('should return an array of course', function(done) {
+            superagent
+                .get(api + '/teacher/' + teacher._id + '/courses')
+                .set('Authorization', presenterAuthHeader)
+                .end(function(err, res) {
+                    assert.equal(err, null, JSON.stringify(err, null, '\t'));
+                    assert.equal(res.body.length, 1);
                     done();
                 });
         });
