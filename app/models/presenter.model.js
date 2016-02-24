@@ -17,6 +17,9 @@ var presenterSchema = new Schema({
     location: {
         type: String
     },
+    vimeoToken: {
+        type: String
+    },
     imageLink: {
         type: String
     },
