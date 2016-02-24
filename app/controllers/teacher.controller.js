@@ -33,7 +33,8 @@ function getCourses(req, res) {
                 _id: course._id,
                 name: course.name,
                 description: course.description,
-                imageLink: course.imageLink
+                imageLink: course.imageLink,
+                updatedAt: course.updatedAt
             });
         });
 
@@ -119,10 +120,8 @@ function getLectures(req, res) {
                 name: lecture.name,
                 description: lecture.description,
                 time: lecture.time,
-                teacher: {
-                    _id: lecture.teacher._id,
-                    name: lecture.teacher.name
-                }
+                zoomStartLink: lecture.zoomStartLink,
+                vimeoLink: lecture.vimeoLink
             });
         });
 
@@ -150,7 +149,6 @@ function getLectures(req, res) {
                 teacher: req.params.teacherId,
                 status: true
             })
-            .populate('teacher')
             .sort('-date')
             .exec(function(err, lectures) {
                 if(err) {
@@ -173,7 +171,12 @@ function getTeacher(req, res) {
             _id: teacher._id,
             name: teacher.name || '',
             description: teacher.description || '',
-            imageLink: teacher.imageLink || ''
+            imageLink: teacher.imageLink || '',
+            presenter: {
+                _id: teacher.presenter._id,
+                name: teacher.presenter.name,
+                location: teacher.presenter.location
+            }
         };
         return res
             .status(200)
@@ -199,6 +202,7 @@ function getTeacher(req, res) {
                 _id: req.params.teacherId,
                 status: true
             })
+            .populate('presenter')
             .exec(callback);
     }
 }

@@ -97,8 +97,8 @@ function getCourses(req, res) {
             result.push({
                 _id: course._id,
                 name: course.name,
-                description: course.description,
-                imageLink: course.imageLink
+                imageLink: course.imageLink,
+                updatedAt: course.updatedAt
             });
         });
 
@@ -153,7 +153,7 @@ function getTeachers(req, res) {
             result.push({
                 _id: teacher._id,
                 name: teacher.name,
-                description: teacher.description,
+                email: teacher.credential.email,
                 imageLink: teacher.imageLink
             });
         });
@@ -182,6 +182,7 @@ function getTeachers(req, res) {
                 presenter: req.params.presenterId,
                 status: true
             })
+            .populate('credential')
             .exec(function(err, teachers) {
                 if(err) {
                     return res.sendStatus(500);
@@ -244,9 +245,10 @@ function updatePresenter(req, res) {
                 req.body._id,
                 {
                     $set: {
-                    name: req.body.name,
-                    description: req.body.description,
-                    imageLink: req.body.imageLink
+                        name: req.body.name,
+                        description: req.body.description,
+                        imageLink: req.body.imageLink,
+                        location: req.body.location
                     }
                 },
                 {
@@ -273,7 +275,8 @@ function getPresenter(req, res) {
             _id: presenter._id,
             name: presenter.name || '',
             description: presenter.description || '',
-            imageLink: presenter.imageLink || ''
+            imageLink: presenter.imageLink || '',
+            location: presenter.location || ''
         };
         return res
             .status(200)

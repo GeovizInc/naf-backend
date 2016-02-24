@@ -14,6 +14,9 @@ var presenterSchema = new Schema({
     description: {
         type: String
     },
+    location: {
+        type: String
+    },
     imageLink: {
         type: String
     },

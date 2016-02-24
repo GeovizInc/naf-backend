@@ -1,6 +1,7 @@
 'use strict';
 var Credential = require('../models/credential.model');
 var Lecture = require('../models/lecture.model');
+var Zoom = require('../utils/zoom');
 var sanitize = require('mongo-sanitize');
 var async = require('async');
 var constants = require('../utils/constants');
@@ -280,9 +281,22 @@ function createLecture(req, res) {
         ], callback);
 
         function getZoomLink(callback) {
-            // TODO implement zoom module
-            lecture.zoomLink = "invalid sample link";
-            callback(null, lecture);
+            var params = {
+                name: req.body.name,
+                startTime: req.body.time,
+                timezone: req.body.timezone,
+                duration: req.body.duration
+            };
+            Zoom.createMeeting(params, function(err, meeting) {
+                if(err) {
+                    return callback(err);
+                }
+                lecture.zoomLink = meeting.join_url;
+                lecture.zoomStartLink = meeting.start_url;
+                lecture.zoomResBody = meeting;
+                callback(null, lecture);
+            });
+
         }
 
         function saveNewLecture(lecture, callback) {

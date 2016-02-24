@@ -33,6 +33,7 @@ function getLectures(req, res) {
                 name: lecture.name,
                 description: lecture.description,
                 time: lecture.time,
+                updatedAt: lecture.updatedAt,
                 teacher: {
                     _id: lecture.teacher._id,
                     name: lecture.teacher.name
