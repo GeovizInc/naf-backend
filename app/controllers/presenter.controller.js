@@ -249,7 +249,8 @@ function updatePresenter(req, res) {
                         name: req.body.name,
                         description: req.body.description,
                         imageLink: req.body.imageLink,
-                        location: req.body.location
+                        location: req.body.location,
+                        vimeoToken: req.body.vimeoToken
                     }
                 },
                 {
