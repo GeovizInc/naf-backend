@@ -97,6 +97,7 @@ function getCourses(req, res) {
             result.push({
                 _id: course._id,
                 name: course.name,
+                description: course.description,
                 imageLink: course.imageLink,
                 updatedAt: course.updatedAt
             });
