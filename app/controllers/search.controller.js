@@ -10,7 +10,9 @@ function findCourse(req, res) {
     var presenterId = req.query.presenterId || false;
     var courseName = req.query.courseName || false;
 
-    var params = {};
+    var params = {
+        status: true
+    };
     if(presenterId) {
         params.presenter = presenterId;
     }
