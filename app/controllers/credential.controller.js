@@ -59,7 +59,9 @@ function register(req, res) {
             email: credential.email,
             userType: credential.userType
         };
-        res = setToken(res, credential._id);
+        if(credential.userType !== constants.TEACHER) {
+            res = setToken(res, credential._id);
+        }
         return res
             .status(200)
             .json(result);
