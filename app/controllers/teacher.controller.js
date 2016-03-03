@@ -212,7 +212,7 @@ function update(req, res) {
         validateRequest,
         updateTeacher
     ], function(err, teacher) {
-        if(err) { console.log(err);
+        if(err) {
             return res.sendStatus(500);
         }
         var result = {
@@ -247,9 +247,6 @@ function update(req, res) {
             var credential = results.credential;
             var teacher = results.teacher;
             if(!teacher._id.equals(credential.teacher) && !teacher.presenter.equals(credential.presenter)) {
-                console.log('teacher id', teacher._id);
-                console.log('credential id', credential._id);
-                console.log('teacher presenter id', teacher.presenter);
                 return callback({
                     status: 401,
                     message: 'Invalid user id'
