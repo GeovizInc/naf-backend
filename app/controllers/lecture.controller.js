@@ -293,17 +293,17 @@ function createLecture(req, res) {
                 }
                 lecture.zoomLink = meeting.join_url;
                 lecture.zoomStartLink = meeting.start_url;
-                lecture.zoomResBody = meeting;
+                lecture.zoomResBody = JSON.stringify(meeting);
                 callback(null, lecture);
             });
 
         }
 
-        function saveNewLecture(lecture, callback) {
+        function saveNewLecture(lecture, callback) { console.log('save lecture');
             lecture.save(function(err, savedLecture) {
-                if(err || !savedLecture) {
+                if(err || !savedLecture) { console.log('save lecture error', err);
                     return res.sendStatus(500);
-                }
+                } console.log('save lecture end');
                 callback(null, savedLecture);
             });
         }
