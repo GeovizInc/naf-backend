@@ -16,7 +16,8 @@ function findCourse(req, res) {
         params.presenter = presenterId;
     }
     if(courseName) {
-        params.name = new RegExp('^' + courseName + '$', "i");
+        params.name = new RegExp(courseName, 'i');
+        console.log(courseName);
     }
 
     Course
@@ -28,13 +29,16 @@ function findCourse(req, res) {
                 result.push({
                     _id: course.id,
                     name: course.name,
-                    presenter: {
+                    /*presenter: {
                         _id: course.presenter._id,
                         name: course.presenter.name
-                    },
+                    },*/
                     updatedAt: course.updatedAt,
                     description: course.description
                 });
             });
+            return res
+                .status(200)
+                .json(result);
         });
 }
