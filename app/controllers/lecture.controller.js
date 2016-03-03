@@ -299,11 +299,11 @@ function createLecture(req, res) {
 
         }
 
-        function saveNewLecture(lecture, callback) { console.log('save lecture');
+        function saveNewLecture(lecture, callback) {
             lecture.save(function(err, savedLecture) {
-                if(err || !savedLecture) { console.log('save lecture error', err);
+                if(err || !savedLecture) {
                     return res.sendStatus(500);
-                } console.log('save lecture end');
+                }
                 callback(null, savedLecture);
             });
         }
