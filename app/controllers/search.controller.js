@@ -1,7 +1,6 @@
 'use strict';
 var Course = require('../models/course.model');
 var sanitize = require('mongo-sanitize');
-var async = require('async');
 var constants = require('../utils/constants');
 
 module.exports.findCourse = findCourse;

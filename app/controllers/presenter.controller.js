@@ -8,11 +8,33 @@ var sanitize = require('mongo-sanitize');
 var async = require('async');
 var constants = require('../utils/constants');
 
+module.exports.getPresenterList = getPresenterList;
 module.exports.getPresenter = getPresenter;
 module.exports.getTeachers = getTeachers;
 module.exports.getCourses = getCourses;
 module.exports.getLectures = getLectures;
 module.exports.update = updatePresenter;
+
+function getPresenterList(req, res) {
+    Presenter
+        .find()
+        .exec(function(err, presenters) {
+            if(err) {
+                return status.sendStatus(500);
+            }
+            var result = [];
+            presenters.forEach(function(presenter) {
+                result.push({
+                    _id: presenter._id,
+                    name: presenter.name,
+                    description: presenter.description
+                });
+                return res
+                    .status(200)
+                    .json(result);
+            });
+        });
+}
 
 function getLectures (req, res) {
     async.waterfall([
