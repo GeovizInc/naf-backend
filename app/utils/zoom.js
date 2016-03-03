@@ -30,8 +30,8 @@ module.exports.createMeeting = function (params, callback) {
         .end(function(err, res) {
             if(res.body.error) {
                 err = {
-                    status: res.body.err.code,
-                    message: res.body.err.message
+                    status: res.body.error.code,
+                    message: res.body.error.message
                 }
             }
             callback(err, res.body);
