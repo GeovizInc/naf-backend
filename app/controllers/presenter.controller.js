@@ -29,10 +29,11 @@ function getPresenterList(req, res) {
                     name: presenter.name,
                     description: presenter.description
                 });
-                return res
-                    .status(200)
-                    .json(result);
+
             });
+            return res
+                .status(200)
+                .json(result);
         });
 }
 
