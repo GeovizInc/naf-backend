@@ -15,7 +15,7 @@ module.exports.createMeeting = function (params, callback) {
     superagent
         .post(config.zoom.apiPrefix + '/meeting/create')
         .query({
-            api_key: '123', //config.zoom.apiKey,
+            api_key: config.zoom.apiKey,
             api_secret: config.zoom.apiSecret,
             data_type: 'JSON',
             host_id: config.zoom.hostId,
