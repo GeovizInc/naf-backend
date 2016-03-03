@@ -52,9 +52,12 @@ teacherSchema.pre('save', function(next){
     }
     next();
 });
-teacherSchema.pre('updatePresenter', function() {
-    this.updatePresenter({},{ $set: { updatedAt: new Date() } });
+
+/*
+teacherSchema.pre('updateTeacher', function() {
+    this.updateTeacher({},{ $set: { updatedAt: new Date() } });
 });
+*/
 
 teacherSchema.plugin(deepPopulate, {} );
 

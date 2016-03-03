@@ -54,9 +54,10 @@ presenterSchema.pre('save', function(next){
     }
     next();
 });
-presenterSchema.pre('updatePresenter', function() {
+
+/*presenterSchema.pre('updatePresenter', function() {
     this.updatePresenter({},{ $set: { updatedAt: new Date() } });
-});
+});*/
 
 presenterSchema.plugin(deepPopulate, {} );
 

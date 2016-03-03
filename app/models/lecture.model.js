@@ -63,6 +63,15 @@ LectureSchema.options.toJSON.transform = function(doc, ret, options) {
     delete ret.__v;
 };
 
+LectureSchema.pre('save', function(next){
+    var now = new Date();
+    this.updatedAt = now;
+    if (!this.createdAt ) {
+        this.createdAt = now;
+    }
+    next();
+});
+
 LectureSchema.plugin(deepPopulate, {} );
 
 module.exports = mongoose.model('Lecture', LectureSchema);

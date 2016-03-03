@@ -2,7 +2,7 @@
 var Course = require('../models/course.model');
 var sanitize = require('mongo-sanitize');
 var constants = require('../utils/constants');
-
+var async = require('async');
 module.exports.findCourse = findCourse;
 
 function findCourse(req, res) {
@@ -16,7 +16,6 @@ function findCourse(req, res) {
     }
     if(courseName) {
         params.name = new RegExp(courseName, 'i');
-        console.log(courseName);
     }
 
     Course
@@ -28,12 +27,13 @@ function findCourse(req, res) {
                 result.push({
                     _id: course.id,
                     name: course.name,
-                    /*presenter: {
-                        _id: course.presenter._id,
-                        name: course.presenter.name
-                    },*/
+                    presenter: {
+                        _id: course.presenter ? course.presenter._id : -1,
+                        name: course.presenter ? course.presenter.name : 'undefined school'
+                    },
                     updatedAt: course.updatedAt,
-                    description: course.description
+                    description: course.description,
+                    imageLink: course.imageLink
                 });
             });
             return res

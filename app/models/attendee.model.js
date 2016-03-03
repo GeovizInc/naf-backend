@@ -43,6 +43,15 @@ attendeeSchema.options.toJSON.transform = function(doc, ret, options) {
     delete ret.__v;
 };
 
+attendeeSchema.pre('save', function(next){
+    var now = new Date();
+    this.updatedAt = now;
+    if (!this.createdAt ) {
+        this.createdAt = now;
+    }
+    next();
+});
+
 attendeeSchema.plugin(deepPopulate, {} );
 
 module.exports = mongoose.model('Attendee', attendeeSchema);
