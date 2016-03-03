@@ -9,5 +9,5 @@ module.exports = function(app) {
     app.post(apiPrefix + '/auth/register', credential.register);
     app.post(apiPrefix + '/auth/login', credential.login);
     app.put(apiPrefix + '/auth', jwt({secret: config.jwt.secret}), credential.changePassword);
-    app.delete(apiPrefix + '/auth', jwt({secret: config.jwt.secret}), credential.delete);
+    app.post(apiPrefix + '/auth/delete', jwt({secret: config.jwt.secret}), credential.delete);
 };

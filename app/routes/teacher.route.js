@@ -9,5 +9,5 @@ module.exports = function(app) {
     app.get(apiPrefix + '/teacher/:teacherId/courses', teacher.getCourses);
     app.get(apiPrefix + '/teacher/:teacherId/lectures', teacher.getLectures);
     app.put(apiPrefix + '/teacher', jwt({secret: config.jwt.secret}), teacher.update);
-    app.delete(apiPrefix + '/teacher', jwt({secret: config.jwt.secret}), teacher.delete)
+    app.post(apiPrefix + '/teacher/delete', jwt({secret: config.jwt.secret}), teacher.delete)
 };

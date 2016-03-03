@@ -8,5 +8,5 @@ module.exports = function(app) {
     app.get(apiPrefix + '/lecture/:lectureId', lecture.getLecture);
     app.post(apiPrefix + '/lecture/', jwt({secret: config.jwt.secret}), lecture.create);
     app.put(apiPrefix + '/lecture', jwt({secret: config.jwt.secret}), lecture.update);
-    app.delete(apiPrefix + '/lecture', jwt({secret: config.jwt.secret}), lecture.delete);
+    app.post(apiPrefix + '/lecture/delete', jwt({secret: config.jwt.secret}), lecture.delete);
 };
