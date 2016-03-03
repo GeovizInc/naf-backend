@@ -80,6 +80,7 @@ function register(req, res) {
         if(userType === constants.TEACHER) {
             req.checkBody('presenter', 'Presenter Id is required').notEmpty().isMongoId();
         }
+
         var errors = req.validationErrors();
         if(errors) {
             return callback({
