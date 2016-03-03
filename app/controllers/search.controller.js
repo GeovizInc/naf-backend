@@ -4,9 +4,9 @@ var sanitize = require('mongo-sanitize');
 var async = require('async');
 var constants = require('../utils/constants');
 
-module.exports.search = search;
+module.exports.findCourse = findCourse;
 
-function search(req, res) {
+function findCourse(req, res) {
     req.query = sanitize(req.query);
     var presenterId = req.query.presenterId || false;
     var courseName = req.query.courseName || false;

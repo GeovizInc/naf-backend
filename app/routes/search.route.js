@@ -5,5 +5,5 @@ var jwt = require('express-jwt');
 var apiPrefix = config.apiPrefix;
 
 module.exports = function(app) {
-    app.get(apiPrefix + '/search', search.find);
+    app.get(apiPrefix + '/search', search.findCourse);
 };
