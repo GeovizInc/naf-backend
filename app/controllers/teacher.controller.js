@@ -121,7 +121,11 @@ function getLectures(req, res) {
                 description: lecture.description,
                 time: lecture.time,
                 zoomStartLink: lecture.zoomStartLink,
-                vimeoLink: lecture.vimeoLink
+                vimeoLink: lecture.vimeoLink,
+                course: {
+                    _id: lecture.course._id,
+                    name: lecture.course.name
+                }
             });
         });
 
@@ -149,6 +153,7 @@ function getLectures(req, res) {
                 teacher: req.params.teacherId,
                 status: true
             })
+            .populate('course')
             .sort('-date')
             .exec(function(err, lectures) {
                 if(err) {
