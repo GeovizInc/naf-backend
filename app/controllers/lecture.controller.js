@@ -158,6 +158,10 @@ function getLecture(req, res) {
                 _id: lecture.teacher._id,
                 name: lecture.teacher.name
             },
+            course: {
+                _id: lecture.course._id,
+                name: lecture.course.name
+            },
             zoomLink: lecture.zoomLink,
             vimeoLink: lecture.vimeoLink
         };
@@ -186,7 +190,7 @@ function getLecture(req, res) {
                 _id: req.params.lectureId,
                 status: true
             })
-            .populate('presenter teacher')
+            .populate('presenter teacher course')
             .exec(function(err, lecture) {
                 if(err) {
                     return res.sendStatus(500);
