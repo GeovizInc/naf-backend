@@ -114,11 +114,6 @@ function updateLecture(req, res) {
             duration: req.body.duration
         };
         Zoom.createMeeting(params, callback);
-
-        lecture.zoomLink = meeting.join_url;
-        lecture.zoomStartLink = meeting.start_url;
-        lecture.zoomResBody = JSON.stringify(meeting);
-
     }
 
     function updateLecture(meeting, callback) {
