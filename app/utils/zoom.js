@@ -28,11 +28,13 @@ module.exports.createMeeting = function (params, callback) {
             option_host_video: true
         })
         .end(function(err, res) {
-            if(res.body.error) {
+            if(err|| !res.body || res.body.error) {
+                console.log(config.zoom.apiPrefix + '/meeting/create');
                 err = {
-                    status: res.body.error.code,
-                    message: res.body.error.message
-                }
+                    status: 500,
+                    message: 'Unable to create zoom meeting'
+                };
+                return callback(err, null);
             }
             callback(err, res.body);
         });
