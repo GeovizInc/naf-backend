@@ -14,6 +14,7 @@ module.exports.delete = deleteLecture;
 function updateLecture(req, res) {
     async.waterfall([
         validateRequest,
+        getZoomLink,
         updateLecture
     ], function(err, lecture) {
         if(err) {
@@ -105,19 +106,40 @@ function updateLecture(req, res) {
         }
     }
 
-    function updateLecture(callback) {
+    function getZoomLink(callback) {
+        var params = {
+            name: req.body.name,
+            startTime: req.body.time,
+            timezone: req.body.timezone,
+            duration: req.body.duration
+        };
+        Zoom.createMeeting(params, callback);
+
+        lecture.zoomLink = meeting.join_url;
+        lecture.zoomStartLink = meeting.start_url;
+        lecture.zoomResBody = JSON.stringify(meeting);
+
+    }
+
+    function updateLecture(meeting, callback) {
+        var param = {
+            name: req.body.name,
+            time: req.body.time,
+            description: req.body.description,
+            teacher: req.body.teacher,
+            zoomLink: meeting.join_url,
+            zoomStartLink: meeting.start_url,
+            zoomResBody: JSON.stringify(meeting)
+        };
+        if(req.body.vimeoLink) {
+            param.vimeoLink = req.body.viemoLink;
+        }
+
         Lecture
             .findByIdAndUpdate(
                 req.body._id,
                 {
-                    $set: {
-                        name: req.body.name,
-                        time: req.body.time,
-                        description: req.body.description,
-                        teacher: req.body.teacher,
-                        zoomLink: req.body.zoomLink,
-                        vimeoLink: req.body.vimeoLink
-                    }
+                    $set: param
                 },
                 {
                     new: true
