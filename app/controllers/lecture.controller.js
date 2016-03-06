@@ -16,7 +16,7 @@ function updateLecture(req, res) {
         validateRequest,
         getZoomLink,
         updateLecture
-    ], function(err, lecture) { console.log('updateLecture last callback', err);
+    ], function(err, lecture) {
         if(err) {
             return res
                 .status(err.status)
@@ -65,13 +65,14 @@ function updateLecture(req, res) {
             credential: getCredential,
             lecture: getLecture
         }, function(err, results) {
-            if(err || !results.credential.presenter || !results.lecture) { console.log('validate request callback');
+            if(err || (!results.credential.presenter && !results.credential.teacher) || !results.lecture) {
                 return res.sendStatus(500);
             }
 
             var presenter = results.credential.presenter;
+            var teacher = results.credential.teacher;
             var lecture = results.lecture;
-            if(!lecture.presenter.equals(presenter._id)) {
+            if((presenter && !lecture.presenter.equals(presenter._id)) && (teacher && !lecture.teacher.equals(teacher._id))) {
                 return callback({
                     status: 401,
                     message: 'Invalid user Id'
@@ -85,7 +86,7 @@ function updateLecture(req, res) {
                 .findById(req.user._id)
                 .populate('presenter teacher')
                 .exec(function(err, credential) {
-                    if(err || !credential || (!credential.presenter && !credential.teacher)) { console.log('validate request getCredential callback');
+                    if(err || !credential || (!credential.presenter && !credential.teacher)) {
                         return res.sendStatus(500);
                     }
 
@@ -97,7 +98,7 @@ function updateLecture(req, res) {
             Lecture
                 .findById(req.body._id)
                 .exec(function(err, lecture) {
-                    if(err) { console.log('validate request getLecture callback');
+                    if(err) {
                         return res.sendStatus(500);
                     }
 
@@ -155,7 +156,7 @@ function updateLecture(req, res) {
                 })
             .populate('presenter teacher')
             .exec(function(err, lecture) {
-                if(err) { console.log('update lecture callback');
+                if(err) {
                     return res.sendStatus(500);
                 }
                 callback(null, lecture);
