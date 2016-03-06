@@ -16,7 +16,7 @@ function updateLecture(req, res) {
         validateRequest,
         getZoomLink,
         updateLecture
-    ], function(err, lecture) {
+    ], function(err, lecture) { console.log('updateLecture last callback', err);
         if(err) {
             return res
                 .status(err.status)
@@ -65,7 +65,7 @@ function updateLecture(req, res) {
             credential: getCredential,
             lecture: getLecture
         }, function(err, results) {
-            if(err || !results.credential.presenter || !results.lecture) {
+            if(err || !results.credential.presenter || !results.lecture) { console.log('validate request callback');
                 return res.sendStatus(500);
             }
 
@@ -85,7 +85,7 @@ function updateLecture(req, res) {
                 .findById(req.user._id)
                 .populate('presenter')
                 .exec(function(err, credential) {
-                    if(err || !credential || !credential.presenter) {
+                    if(err || !credential || !credential.presenter) { console.log('validate request getCredential callback');
                         return res.sendStatus(500);
                     }
 
@@ -97,7 +97,7 @@ function updateLecture(req, res) {
             Lecture
                 .findById(req.body._id)
                 .exec(function(err, lecture) {
-                    if(err) {
+                    if(err) { console.log('validate request getLecture callback');
                         return res.sendStatus(500);
                     }
 
@@ -155,7 +155,7 @@ function updateLecture(req, res) {
                 })
             .populate('presenter teacher')
             .exec(function(err, lecture) {
-                if(err) {
+                if(err) { console.log('update lecture callback');
                     return res.sendStatus(500);
                 }
                 callback(null, lecture);
