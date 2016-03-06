@@ -141,7 +141,7 @@ function updateLecture(req, res) {
         if(req.body.vimeoLink) {
             param.vimeoLink = req.body.vimeoLink;
         }
-        if(req.body.zoomLink) {
+        if(req.body.zoomLink || req.body.zoomLink === '') {
             param.zoomLink = req.body.zoomLink;
         }
         Lecture
