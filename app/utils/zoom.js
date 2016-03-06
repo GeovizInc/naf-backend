@@ -29,7 +29,6 @@ module.exports.createMeeting = function (params, callback) {
         })
         .end(function(err, res) {
             if(err|| !res.body || res.body.error) {
-                console.log(config.zoom.apiPrefix + '/meeting/create');
                 err = {
                     status: 500,
                     message: 'Unable to create zoom meeting'

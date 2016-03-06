@@ -107,6 +107,9 @@ function updateLecture(req, res) {
     }
 
     function getZoomLink(callback) {
+        if(!req.body.date) {
+            callback(null, false);
+        }
         var params = {
             name: req.body.name,
             startTime: req.body.time,
@@ -117,11 +120,12 @@ function updateLecture(req, res) {
     }
 
     function updateLecture(meeting, callback) {
-        var param = {
-            zoomLink: meeting.join_url,
-            zoomStartLink: meeting.start_url,
-            zoomResBody: JSON.stringify(meeting)
-        };
+        var param = {};
+        if(meeting) {
+            param.zoomLink = meeting.join_url;
+            param.zoomStartLink = meeting.start_url;
+            param.zoomResBody = JSON.stringify(meeting);
+        }
         if(req.body.name) {
             param.name = req.body.name;
         }
@@ -135,9 +139,11 @@ function updateLecture(req, res) {
             param.teacher = req.body.teacher;
         }
         if(req.body.vimeoLink) {
-            param.vimeoLink = req.body.viemoLink;
+            param.vimeoLink = req.body.vimeoLink;
         }
-
+        if(req.body.zoomLink) {
+            param.zoomLink = req.body.zoomLink;
+        }
         Lecture
             .findByIdAndUpdate(
                 req.body._id,
