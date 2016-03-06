@@ -49,9 +49,9 @@ function updateLecture(req, res) {
 
     function validateRequest(callback) {
         req.checkBody('_id', 'Lecture Id is required').isMongoId();
-        req.checkBody('name', 'Lecture name is required').notEmpty();
-        req.checkBody('time', 'Date is required').isDate();
-        req.checkBody('teacher', 'Teacher Id is required').isMongoId();
+        //req.checkBody('name', 'Lecture name is required').notEmpty();
+        //req.checkBody('time', 'Date is required').isDate();
+        //req.checkBody('teacher', 'Teacher Id is required').isMongoId();
 
         var errors = req.validationErrors();
         if(errors) {
@@ -118,14 +118,22 @@ function updateLecture(req, res) {
 
     function updateLecture(meeting, callback) {
         var param = {
-            name: req.body.name,
-            time: req.body.time,
-            description: req.body.description,
-            teacher: req.body.teacher,
             zoomLink: meeting.join_url,
             zoomStartLink: meeting.start_url,
             zoomResBody: JSON.stringify(meeting)
         };
+        if(req.body.name) {
+            param.name = req.body.name;
+        }
+        if(req.body.time) {
+            param.time = req.body.time;
+        }
+        if(req.body.description) {
+            param.description = req.body.description;
+        }
+        if(req.body.teacher) {
+            param.teacher = req.body.teacher;
+        }
         if(req.body.vimeoLink) {
             param.vimeoLink = req.body.viemoLink;
         }
