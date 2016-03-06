@@ -83,9 +83,9 @@ function updateLecture(req, res) {
         function getCredential(callback) {
             Credential
                 .findById(req.user._id)
-                .populate('presenter')
+                .populate('presenter teacher')
                 .exec(function(err, credential) {
-                    if(err || !credential || !credential.presenter) { console.log('validate request getCredential callback');
+                    if(err || !credential || (!credential.presenter && !credential.teacher)) { console.log('validate request getCredential callback');
                         return res.sendStatus(500);
                     }
 
