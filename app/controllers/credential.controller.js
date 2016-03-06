@@ -247,8 +247,8 @@ function changePassword(req, res) {
 
     function validateRequest(callback) {
         req.checkBody('id', 'User ID is required').notEmpty().isMongoId();
+        req.checkBody('currentPassword', 'Current Password is required').notEmpty();
         req.checkBody('password', 'Password is required').notEmpty();
-
         var errors = req.validationErrors();
         if(errors) {
             return callback({
@@ -278,10 +278,17 @@ function changePassword(req, res) {
                     if(!foundCredential || foundCredential[foundCredential.userType] != req.body.id) {
                         return callback({
                             status: 401,
-                            message: 'Invalid user Id'
+                            message: 'Current Password is incorrect'
                         });
                     }
                     credential = foundCredential;
+                    if(!bcrypt.compareSync(req.body.currentPassword, credential.password)) {
+                        return res
+                            .status(403)
+                            .json({
+                                message: 'Invalid password'
+                            });
+                    }
                     callback(null);
                 });
         }
