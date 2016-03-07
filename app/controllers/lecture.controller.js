@@ -141,6 +141,8 @@ function updateLecture(req, res) {
         }
         if(req.body.vimeoLink) {
             param.vimeoLink = req.body.vimeoLink;
+            param.zoomLink = '';
+            param.zoomStartLink = '';
         }
         if(req.body.zoomLink || req.body.zoomLink === '') {
             param.zoomLink = req.body.zoomLink;
