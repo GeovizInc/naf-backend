@@ -11,8 +11,8 @@ config.jwt = {
 
 config.zoom = {
     apiPrefix: 'https://api.zoom.us/v1',
-    apiKey: 'r_ZHf8ibRO-LXeDpf3lSxQ',
-    apiSecret: 'YwQp52jONzzwCF6hy78jPyoA7JaswtyyikQf',
-    accessToken: 'WYnpXZqwsmGjNiexXpU17H11Myzj9xfQeOJ7',
-    hostId: '9zBPilvdQvWNDqpMIZfCCg'
+    apiKey: 'Wio4xSnNSo6IPfg6uO1pxA',
+    apiSecret: 'mMSIrxBfaTPhZDxlHR3QaotP788FU4s5smyz',
+    accessToken: 'yVAaN8f4FnuoRwIpphuCDiosytGwNP3hVI88',
+    hostId: 'uLa29ShaTjiEXFKztw7cBA'
 };
