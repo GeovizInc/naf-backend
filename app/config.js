@@ -16,3 +16,7 @@ config.zoom = {
     accessToken: 'yVAaN8f4FnuoRwIpphuCDiosytGwNP3hVI88',
     hostId: 'uLa29ShaTjiEXFKztw7cBA'
 };
+
+config.pagination = {
+    limit: 2
+};

@@ -2,9 +2,11 @@
 var Credential = require('../models/credential.model');
 var Course = require('../models/course.model');
 var Lecture = require('../models/lecture.model');
-var sanitize = require('mongo-sanitize');
 var async = require('async');
 var constants = require('../utils/constants');
+var config = require('../config');
+var paginate = require('express-paginate');
+var sanitize = require('mongo-sanitize');
 
 module.exports.getCourse = getCourse;
 module.exports.getLectures = getLectures;
@@ -24,26 +26,6 @@ function getLectures(req, res) {
                     message: err.message
                 });
         }
-
-        var result = [];
-
-        lectures.forEach(function(lecture) {
-            result.push({
-                _id: lecture._id,
-                name: lecture.name,
-                description: lecture.description,
-                time: lecture.time,
-                updatedAt: lecture.updatedAt,
-                teacher: {
-                    _id: lecture.teacher._id,
-                    name: lecture.teacher.name
-                }
-            });
-        });
-
-        return res
-            .status(200)
-            .json(result);
     });
 
     function validateRequest(callback) {
@@ -60,18 +42,45 @@ function getLectures(req, res) {
     }
 
     function findLectures(callback) {
-        Lecture
+        var query = Lecture
             .find({
                 course: req.params.courseId,
                 status: true
             })
-            .populate('teacher')
-            .sort('-date')
-            .exec(function(err, lectures) {
+            .sort('-date');
+        var page = parseInt(sanitize(req.query.page)) || 1;
+        var limit = parseInt(sanitize(req.query.limit)) || config.pagination.limit;
+
+        Lecture.paginate(query, {page: page, limit: limit, populate: 'teacher'},
+            function(err, lectures, pageCount, itemCount) {
                 if(err) {
                     return res.sendStatus(500);
                 }
-                callback(null, lectures);
+
+                var result = [];
+
+                lectures.forEach(function(lecture) {
+                    result.push({
+                        _id: lecture._id,
+                        name: lecture.name,
+                        description: lecture.description,
+                        time: lecture.time,
+                        updatedAt: lecture.updatedAt,
+                        teacher: {
+                            _id: lecture.teacher._id,
+                            name: lecture.teacher.name
+                        }
+                    });
+                });
+
+                return res.status(200).json({
+                    object: 'list',
+                    hasNext: paginate.hasNextPages(req)(pageCount),
+                    data: result,
+                    currentPage: page,
+                    limit: limit,
+                    pageCount: pageCount
+                });
             });
     }
 }

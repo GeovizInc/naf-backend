@@ -334,7 +334,6 @@ function createLecture(req, res) {
                 lecture.zoomResBody = JSON.stringify(meeting);
                 callback(null, lecture);
             });
-
         }
 
         function saveNewLecture(lecture, callback) {

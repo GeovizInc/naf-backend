@@ -2,6 +2,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var deepPopulate = require('mongoose-deep-populate')(mongoose);
+var paginate = require('mongoose-paginate');
 
 var LectureSchema = new Schema({
     name: {
@@ -72,6 +73,7 @@ LectureSchema.pre('save', function(next){
     next();
 });
 
-LectureSchema.plugin(deepPopulate, {} );
+LectureSchema.plugin(deepPopulate, {});
+LectureSchema.plugin(paginate);
 
 module.exports = mongoose.model('Lecture', LectureSchema);

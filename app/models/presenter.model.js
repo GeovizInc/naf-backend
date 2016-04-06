@@ -2,6 +2,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var deepPopulate = require('mongoose-deep-populate')(mongoose);
+var paginate = require('mongoose-paginate');
 
 var presenterSchema = new Schema({
     credential: {
@@ -60,5 +61,6 @@ presenterSchema.pre('save', function(next){
 });*/
 
 presenterSchema.plugin(deepPopulate, {} );
+presenterSchema.plugin(paginate);
 
 module.exports = mongoose.model('Presenter', presenterSchema);

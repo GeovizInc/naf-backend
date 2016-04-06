@@ -7,6 +7,8 @@ var Teacher = require('../models/teacher.model');
 var sanitize = require('mongo-sanitize');
 var async = require('async');
 var constants = require('../utils/constants');
+var config = require('../config');
+var paginate = require('express-paginate');
 
 module.exports.getPresenterList = getPresenterList;
 module.exports.getPresenter = getPresenter;
@@ -87,6 +89,7 @@ function getLectures (req, res) {
     }
 
     function findLectures(callback) {
+
         Lecture
             .find({
                 presenter: req.params.presenterId,
@@ -115,17 +118,6 @@ function getCourses(req, res) {
                 });
         }
 
-        var result = [];
-        courses.forEach(function(course) {
-            result.push({
-                _id: course._id,
-                name: course.name,
-                description: course.description,
-                imageLink: course.imageLink,
-                updatedAt: course.updatedAt
-            });
-        });
-
         return res
             .status(200)
             .json(result);
@@ -145,16 +137,39 @@ function getCourses(req, res) {
     }
 
     function findCourses(callback) {
-        Course
+        var query = Course
             .find({
                 presenter: req.params.presenterId,
                 status: true
-            })
-            .exec(function(err, courses) {
+            });
+        var page = parseInt(sanitize(req.query.page)) || 1;
+        var limit = parseInt(sanitize(req.query.limit)) || config.pagination.limit;
+
+        Course.paginate(query, {page: page, limit: limit},
+            function(err, courses, pageCount, itemCount) {
                 if(err) {
                     return res.sendStatus(500);
                 }
-                callback(null, courses);
+
+                var result = [];
+                courses.forEach(function(course) {
+                    result.push({
+                        _id: course._id,
+                        name: course.name,
+                        description: course.description,
+                        imageLink: course.imageLink,
+                        updatedAt: course.updatedAt
+                    });
+                });
+
+                return res.status(200).json({
+                    object: 'list',
+                    hasNext: paginate.hasNextPages(req)(pageCount),
+                    data: result,
+                    currentPage: page,
+                    limit: limit,
+                    pageCount: pageCount
+                });
             });
     }
 }
@@ -171,16 +186,6 @@ function getTeachers(req, res) {
                     message: err.message
                 });
         }
-
-        var result = [];
-        teachers.forEach(function(teacher) {
-            result.push({
-                _id: teacher._id,
-                name: teacher.name,
-                email: teacher.credential.email,
-                imageLink: teacher.imageLink
-            });
-        });
 
         return res
             .status(200)
@@ -201,18 +206,67 @@ function getTeachers(req, res) {
     }
 
     function findTeachers(callback) {
-        Teacher
+        var query = Teacher
             .find({
                 presenter: req.params.presenterId,
                 status: true
-            })
-            .populate('credential')
-            .exec(function(err, teachers) {
-                if(err) {
-                    return res.sendStatus(500);
-                }
-                callback(null, teachers);
             });
+        var page = parseInt(sanitize(req.query.page)) || 1;
+        var limit = parseInt(sanitize(req.query.limit)) || config.pagination.limit;
+
+        if(req.query.getAll) {
+            Teacher
+                .find({
+                    presenter: req.params.presenterId,
+                    status: true
+                })
+                .populate('credential')
+                .exec(function(err, teachers) {
+                    if(err) {
+                        return res.sendStatus(500);
+                    }
+                    var result = [];
+
+                    teachers.forEach(function(teacher) {
+                        result.push({
+                            _id: teacher._id,
+                            name: teacher.name,
+                            email: teacher.credential.email,
+                            imageLink: teacher.imageLink
+                        });
+                    });
+                    return res.status(200).json({
+                        data: result
+                    });
+                });
+        } else {
+            Teacher.paginate(query, {page: page, limit: limit, populate: 'credential'},
+                function(err, teachers, pageCount, itemCount) {
+                    if(err) {
+                        return res.sendStatus(500);
+                    }
+
+                    var result = [];
+                    teachers.forEach(function(teacher) {
+                        result.push({
+                            _id: teacher._id,
+                            name: teacher.name,
+                            email: teacher.credential.email,
+                            imageLink: teacher.imageLink
+                        });
+                    });
+
+                    return res.status(200).json({
+                        object: 'list',
+                        hasNext: paginate.hasNextPages(req)(pageCount),
+                        data: result,
+                        currentPage: page,
+                        limit: limit,
+                        pageCount: pageCount
+                    });
+                });
+        }
+
     }
 }
 

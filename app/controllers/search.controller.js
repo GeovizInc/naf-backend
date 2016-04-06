@@ -3,6 +3,9 @@ var Course = require('../models/course.model');
 var sanitize = require('mongo-sanitize');
 var constants = require('../utils/constants');
 var async = require('async');
+var config = require('../config');
+var paginate = require('express-paginate');
+
 module.exports.findCourse = findCourse;
 
 function findCourse(req, res) {
@@ -20,10 +23,16 @@ function findCourse(req, res) {
         params.name = new RegExp(courseName, 'i');
     }
 
-    Course
-        .find(params)
-        .populate('presenter')
-        .exec(function(err, courses) {
+    var query = Course.find(params);
+    var page = parseInt(sanitize(req.query.page)) || 1;
+    var limit = parseInt(sanitize(req.query.limit)) || config.pagination.limit;
+
+    Course.paginate(query, {page: page, limit: limit, populate: 'presenter'},
+        function(err, courses, pageCount, itemCount) {
+            if(err) {
+                return res.sendStatus(500);
+            }
+
             var result = [];
             courses.forEach(function(course) {
                 result.push({
@@ -38,8 +47,14 @@ function findCourse(req, res) {
                     imageLink: course.imageLink
                 });
             });
-            return res
-                .status(200)
-                .json(result);
+
+            return res.status(200).json({
+                object: 'list',
+                hasNext: paginate.hasNextPages(req)(pageCount),
+                data: result,
+                currentPage: page,
+                limit: limit,
+                pageCount: pageCount
+            });
         });
 }

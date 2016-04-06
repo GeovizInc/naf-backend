@@ -6,6 +6,8 @@ var Teacher = require('../models/teacher.model');
 var sanitize = require('mongo-sanitize');
 var async = require('async');
 var constants = require('../utils/constants');
+var config = require('../config');
+var paginate = require('express-paginate');
 
 module.exports.getTeacher = getTeacher;
 module.exports.getCourses = getCourses;
@@ -26,17 +28,7 @@ function getCourses(req, res) {
                 });
         }
 
-        var result = [];
 
-        courses.forEach(function(course) {
-            result.push({
-                _id: course._id,
-                name: course.name,
-                description: course.description,
-                imageLink: course.imageLink,
-                updatedAt: course.updatedAt
-            });
-        });
 
         return res
             .status(200)
@@ -83,17 +75,41 @@ function getCourses(req, res) {
         }
 
         function populateCourses(courseIds, callback) {
-            Course
+            var query = Course
                 .find({
                     _id: {
                         $in: courseIds
                     }
-                })
-                .exec(function(err, courses) {
+                });
+            var page = parseInt(sanitize(req.query.page)) || 1;
+            var limit = parseInt(sanitize(req.query.limit)) || config.pagination.limit;
+
+            Course.paginate(query, {page: page, limit: limit},
+                function(err, courses, pageCount, itemCount) {
                     if(err) {
                         return res.sendStatus(500);
                     }
-                    callback(null, courses);
+
+                    var result = [];
+
+                    courses.forEach(function(course) {
+                        result.push({
+                            _id: course._id,
+                            name: course.name,
+                            description: course.description,
+                            imageLink: course.imageLink,
+                            updatedAt: course.updatedAt
+                        });
+                    });
+
+                    return res.status(200).json({
+                        object: 'list',
+                        hasNext: paginate.hasNextPages(req)(pageCount),
+                        data: result,
+                        currentPage: page,
+                        limit: limit,
+                        pageCount: pageCount
+                    });
                 });
         }
     }
@@ -111,27 +127,6 @@ function getLectures(req, res) {
                     message: err.message
                 });
         }
-
-        var result = [];
-
-        lectures.forEach(function(lecture) {
-            result.push({
-                _id: lecture._id,
-                name: lecture.name,
-                description: lecture.description,
-                time: lecture.time,
-                zoomStartLink: lecture.zoomStartLink,
-                vimeoLink: lecture.vimeoLink,
-                course: {
-                    _id: lecture.course._id,
-                    name: lecture.course.name
-                }
-            });
-        });
-
-        return res
-            .status(200)
-            .json(result);
     });
 
     function validateRequest(callback) {
@@ -148,18 +143,47 @@ function getLectures(req, res) {
     }
 
     function findLectures(callback) {
-        Lecture
+        var query = Lecture
             .find({
                 teacher: req.params.teacherId,
                 status: true
             })
-            .populate('course')
-            .sort('-date')
-            .exec(function(err, lectures) {
+            .sort('-date');
+
+        var page = parseInt(sanitize(req.query.page)) || 1;
+        var limit = parseInt(sanitize(req.query.limit)) || config.pagination.limit;
+
+        Lecture.paginate(query, {page: page, limit: limit, populate: 'course'},
+            function(err, lectures, pageCount, itemCount) {
                 if(err) {
                     return res.sendStatus(500);
                 }
-                callback(null, lectures);
+
+                var result = [];
+
+                lectures.forEach(function(lecture) {
+                    result.push({
+                        _id: lecture._id,
+                        name: lecture.name,
+                        description: lecture.description,
+                        time: lecture.time,
+                        zoomStartLink: lecture.zoomStartLink,
+                        vimeoLink: lecture.vimeoLink,
+                        course: {
+                            _id: lecture.course._id,
+                            name: lecture.course.name
+                        }
+                    });
+                });
+
+                return res.status(200).json({
+                    object: 'list',
+                    hasNext: paginate.hasNextPages(req)(pageCount),
+                    data: result,
+                    currentPage: page,
+                    limit: limit,
+                    pageCount: pageCount
+                });
             });
     }
 }
@@ -209,6 +233,8 @@ function getTeacher(req, res) {
             })
             .populate('presenter')
             .exec(callback);
+
+
     }
 }
 
