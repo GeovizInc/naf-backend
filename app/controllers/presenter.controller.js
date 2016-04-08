@@ -16,6 +16,7 @@ module.exports.getTeachers = getTeachers;
 module.exports.getCourses = getCourses;
 module.exports.getLectures = getLectures;
 module.exports.update = updatePresenter;
+module.exports.getLecturesLimit = getLecturesLimit;
 
 function getPresenterList(req, res) {
     Presenter
@@ -395,6 +396,76 @@ function getPresenter(req, res) {
             .findById(req.params.presenterId)
             .exec(callback);
     }
+}
+
+function getLecturesLimit(req, res) {
+    async.waterfall([
+        findCredential,
+        findPresenter,
+        findLectures
+    ], function(err, lectureLimit) {
+        if(err) {
+            return res
+                .status(err.status)
+                .json({error: err.description});
+        }
+        if(lectureLimit) {
+            return res
+                .status(200)
+                .json(lectureLimit)
+        }
+    });
+
+    function findCredential(callback) {
+        Credential
+            .findById(req.user._id)
+            .exec(function(err, credential) {
+                if(err || !credential) {
+                    callback({status:404, description:'No credential found'});
+                }
+                if(!credential.presenter) {
+                    callback({status:401, description:'credential is not a presenter'});
+                }
+                if(credential) {
+                    callback(null,credential.presenter);
+                }
+            })
+    }
+
+    function findPresenter(presenterId, callback){
+        Presenter
+            .findById(presenterId)
+            .exec(function(err,presenter) {
+                if(err || !presenter) {
+                    callback({status:404, description:'No presenter found'});
+                }
+                if(presenter) {
+                    callback(null,presenter._id);
+                }
+            })
+    }
+
+    function findLectures(presenterId, callback) {
+        Lecture
+            .find({presenter:presenterId})
+            .exec(function(err,lectures) {
+                var lectureNumber = 0;
+                if(err) {
+                    callback({status:500, description:err.body});
+                }
+                if(lectures){
+                    lectureNumber = lectures.length;
+                }
+                var lectureLimit = {
+                    currentLecture:lectureNumber,
+                    totalLectureLimit:config.zoomLimit
+                }
+                callback(null,lectureLimit);
+            })
+    }
+
+
+
 }
 
 

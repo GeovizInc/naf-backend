@@ -20,3 +20,5 @@ config.zoom = {
 config.pagination = {
     limit: 2
 };
+
+config.zoomLimit = 15;

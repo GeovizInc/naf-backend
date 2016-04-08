@@ -6,6 +6,7 @@ var apiPrefix = config.apiPrefix;
 
 module.exports = function(app) {
     app.get(apiPrefix + '/presenter', presenter.getPresenterList);
+    app.get(apiPrefix + '/presenter/lectureslimit', jwt({secret: config.jwt.secret}), presenter.getLecturesLimit );
     app.get(apiPrefix + '/presenter/:presenterId', presenter.getPresenter);
     app.get(apiPrefix + '/presenter/:presenterId/teachers', presenter.getTeachers);
     app.get(apiPrefix + '/presenter/:presenterId/courses', presenter.getCourses);
