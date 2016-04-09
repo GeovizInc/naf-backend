@@ -15,6 +15,8 @@ module.exports.getLectures = getLectures;
 module.exports.update = update;
 module.exports.delete = deleteTeacher;
 
+module.exports.getVimeoCred = getVimeoCred;
+
 function getCourses(req, res) {
     async.waterfall([
         validateRequest,
@@ -421,10 +423,46 @@ function deleteTeacher(req, res) {
     }
 }
 
-function placeholder(req, res) {
-    return res
-        .status(500)
-        .json({
-            message: 'under construction'
+function getVimeoCred(req, res) {
+    async.waterfall([
+        findCredential,
+        findPresenter
+    ], function(err) {
+        if(err) return res.status(err.status).json({
+            error: err.text
         });
+    });
+
+    function findCredential(callback) {
+        Credential
+            .findById(req.user._id)
+            .exec(function(err, cred) {
+                if(err) return callback({
+                    status: 500,
+                    text: 'DB error'
+                });
+                if(!cred.teacher) return callback({
+                    status: 400,
+                    text: 'User not teacher'
+                });
+
+                callback(null, cred.teacher);
+            });
+    }
+
+    function findPresenter(teacherId, callback) {
+        Teacher
+            .findById(teacherId)
+            .populate('presenter')
+            .exec(function(err, teacher) {
+                if(err || !teacher.presenter) return callback({
+                    status: 500,
+                    text: 'DB error'
+                });
+                var presenter = teacher.presenter;
+                return res.status(200).json({
+                    accessToken: presenter.vimeoToken
+                });
+            });
+    }
 }

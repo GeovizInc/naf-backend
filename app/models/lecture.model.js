@@ -35,6 +35,9 @@ var LectureSchema = new Schema({
     zoomStartLink: {
         type: String
     },
+    zoomId: {
+        type: String
+    },
     zoomResBody: {
         type: String
     },

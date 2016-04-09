@@ -1,6 +1,7 @@
 'use strict';
 var Credential = require('../models/credential.model');
 var Lecture = require('../models/lecture.model');
+var Teacher = require('../models/teacher.model');
 var Zoom = require('../utils/zoom');
 var sanitize = require('mongo-sanitize');
 var async = require('async');
@@ -48,6 +49,7 @@ function updateLecture(req, res) {
     });
 
     function validateRequest(callback) {
+        
         req.checkBody('_id', 'Lecture Id is required').isMongoId();
         //req.checkBody('name', 'Lecture name is required').notEmpty();
         //req.checkBody('time', 'Date is required').isDate();
@@ -78,10 +80,24 @@ function updateLecture(req, res) {
                     message: 'Invalid user Id'
                 });
             }
-            callback(null);
+
+            if(!presenter) {
+                Teacher
+                    .findById(teacher._id)
+                    .populate('presenter')
+                    .exec(function(err, teacher) {
+
+                        if(err || !teacher.presenter) return callback({
+                            status: 500,
+                            message: 'DB error'
+                        });
+                        callback(null, presenter, lecture);
+                    })
+            } else callback(null, presenter, lecture);
         });
 
         function getCredential(callback) {
+
             Credential
                 .findById(req.user._id)
                 .populate('presenter teacher')
@@ -95,6 +111,7 @@ function updateLecture(req, res) {
         }
 
         function getLecture(callback) {
+
             Lecture
                 .findById(req.body._id)
                 .exec(function(err, lecture) {
@@ -107,26 +124,29 @@ function updateLecture(req, res) {
         }
     }
 
-    function getZoomLink(callback) {
+    function getZoomLink(presenter, lecture, callback) {
+
         if(!req.body.date) {
             callback(null, false);
         }
         var params = {
+            zoom: presenter.zoom,
+            id: lecture.zoomId,
             name: req.body.name,
             startTime: req.body.time,
             timezone: req.body.timezone,
             duration: req.body.duration
         };
-        Zoom.createMeeting(params, callback);
+        Zoom.updateMeeting(params, callback);
     }
 
     function updateLecture(meeting, callback) {
         var param = {};
-        if(meeting) {
+        /*if(meeting) {
             param.zoomLink = meeting.join_url;
             param.zoomStartLink = meeting.start_url;
             param.zoomResBody = JSON.stringify(meeting);
-        }
+        }*/
         if(req.body.name) {
             param.name = req.body.name;
         }
@@ -147,6 +167,7 @@ function updateLecture(req, res) {
         if(req.body.zoomLink || req.body.zoomLink === '') {
             param.zoomLink = req.body.zoomLink;
         }
+
         Lecture
             .findByIdAndUpdate(
                 req.body._id,
@@ -323,7 +344,8 @@ function createLecture(req, res) {
                 name: req.body.name,
                 startTime: req.body.time,
                 timezone: req.body.timezone,
-                duration: req.body.duration
+                duration: req.body.duration,
+                zoom: presenter.zoom
             };
             Zoom.createMeeting(params, function(err, meeting) {
                 if(err) {
@@ -331,6 +353,7 @@ function createLecture(req, res) {
                 }
                 lecture.zoomLink = meeting.join_url;
                 lecture.zoomStartLink = meeting.start_url;
+                lecture.zoomId = meeting.id;
                 lecture.zoomResBody = JSON.stringify(meeting);
                 callback(null, lecture);
             });
@@ -437,11 +460,19 @@ function deleteLecture(req, res) {
                 {
                     new: true
                 })
+            .populate('presenter')
             .exec(function(err, lecture) {
                 if(err) {
                     return res.sendStatus(500);
                 }
-                callback(null, lecture);
+                var params = {
+                    zoom: lecture.presenter.zoom,
+                    id: lecture.zoomId
+                };
+                Zoom.deleteMeeting(params, function(err) {
+                    callback(err, lecture);
+                });
+
             });
     }
 }

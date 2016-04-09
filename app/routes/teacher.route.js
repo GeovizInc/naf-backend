@@ -6,6 +6,7 @@ var jwt = require('express-jwt');
 var apiPrefix = config.apiPrefix;
 
 module.exports = function(app) {
+    app.get(apiPrefix + '/teacher/getVimeoCred', jwt({secret: config.jwt.secret}), teacher.getVimeoCred);
     app.get(apiPrefix + '/teacher/:teacherId', teacher.getTeacher);
     app.get(apiPrefix + '/teacher/:teacherId/courses', teacher.getCourses);
     app.get(apiPrefix + '/teacher/:teacherId/lectures', teacher.getLectures);
