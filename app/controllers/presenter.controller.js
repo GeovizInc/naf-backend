@@ -18,6 +18,10 @@ module.exports.getLectures = getLectures;
 module.exports.update = updatePresenter;
 module.exports.getLecturesLimit = getLecturesLimit;
 
+module.exports.getCred = getCred;
+module.exports.updateZoomCred = updateZoomCred;
+module.exports.updateVimeoCred = updateVimeoCred;
+
 function getPresenterList(req, res) {
     Presenter
         .find()
@@ -468,11 +472,155 @@ function getLecturesLimit(req, res) {
 
 }
 
+function getCred(req, res) {
+    async.waterfall([
+        validateRequest,
+        getCredentials
+    ], function(err, presenter) {
+        if(err) return res
+            .status(err.status)
+            .json({
+                error: status.text
+            });
+        var result = {
+            zoom: {},
+            vimeo: {}
+        };
+        result.zoom = presenter.zoom || {};
+        result.vimeo.accessToken = presenter.vimeoToken;
+        return res.status(200).json(result);
+    });
 
-function placeholder(req, res) {
-    return res
-        .status(500)
-        .json({
-            message: 'under construction'
-        });
+    function validateRequest(callback) {
+        Credential
+            .findById(req.user._id)
+            .exec(function(err, cred) {
+                if(err) return callback({
+                    status: 500,
+                    text: 'User not found'
+                });
+                if(!cred.presenter) return callback({
+                    status: 400,
+                    text: 'User not a presenter'
+                });
+                callback(null, cred.presenter);
+            });
+    }
+
+    function getCredentials(presenterId, callback) {
+        Presenter
+            .findById(presenterId)
+            .exec(function(err, presenter) {
+                if(err) return callback({
+                    status: 500,
+                    text: 'DB error'
+                });
+                callback(null, presenter);
+            });
+    }
+}
+
+function updateZoomCred(req, res) {
+    async.waterfall([
+        validateRequest,
+        updateCredentials
+    ], function(err, presenter) {
+        if(err) return res
+            .status(err.status)
+            .json({
+                error: status.text
+            });
+
+        return res.sendStatus(200);
+    });
+
+    function validateRequest(callback) {
+        Credential
+            .findById(req.user._id)
+            .exec(function(err, cred) {
+                if(err) return callback({
+                    status: 500,
+                    text: 'User not found'
+                });
+                if(!cred.presenter) return callback({
+                    status: 400,
+                    text: 'User not a presenter'
+                });
+                callback(null, cred.presenter);
+            });
+    }
+
+    function updateCredentials(presenterId, callback) {
+        Presenter
+            .findByIdAndUpdate(
+                presenterId,
+                {
+                    $set: {
+                        zoom: {
+                            apiKey: req.body.apiKey,
+                            apiSecret: req.body.apiSecret,
+                            accessToken: req.body.accessToken,
+                            hostId: req.body.hostId
+                        }
+                    }
+                },
+                function(err, presenter) {
+                    if(err) return callback({
+                        status: 500,
+                        text: 'DB error'
+                    });
+                    callback(null);
+                }
+            )
+    }
+}
+
+function updateVimeoCred(req, res) {
+    async.waterfall([
+        validateRequest,
+        updateCredentials
+    ], function(err, presenter) {
+        if(err) return res
+            .status(err.status)
+            .json({
+                error: status.text
+            });
+
+        return res.sendStatus(200);
+    });
+
+    function validateRequest(callback) {
+        Credential
+            .findById(req.user._id)
+            .exec(function(err, cred) {
+                if(err) return callback({
+                    status: 500,
+                    text: 'User not found'
+                });
+                if(!cred.presenter) return callback({
+                    status: 400,
+                    text: 'User not a presenter'
+                });
+                callback(null, cred.presenter);
+            });
+    }
+
+    function updateCredentials(presenterId, callback) {
+        Presenter
+            .findByIdAndUpdate(
+                presenterId,
+                {
+                    $set: {
+                        vimeoToken: req.body.accessToken
+                    }
+                },
+                function(err, presenter) {
+                    if(err) return callback({
+                        status: 500,
+                        text: 'DB error'
+                    });
+                    callback(null);
+                }
+            )
+    }
 }

@@ -21,6 +21,12 @@ var presenterSchema = new Schema({
     vimeoToken: {
         type: String
     },
+    zoom: {
+        apiKey: String,
+        apiSecret: String,
+        accessToken: String,
+        hostId: String
+    },
     imageLink: {
         type: String
     },
