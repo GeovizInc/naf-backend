@@ -451,7 +451,7 @@ function getLecturesLimit(req, res) {
 
     function findLectures(presenterId, callback) {
         Lecture
-            .find({presenter:presenterId})
+            .find({presenter:presenterId, status: true})
             .exec(function(err,lectures) {
                 var lectureNumber = 0;
                 if(err) {

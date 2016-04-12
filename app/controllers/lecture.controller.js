@@ -49,7 +49,7 @@ function updateLecture(req, res) {
     });
 
     function validateRequest(callback) {
-        
+
         req.checkBody('_id', 'Lecture Id is required').isMongoId();
         //req.checkBody('name', 'Lecture name is required').notEmpty();
         //req.checkBody('time', 'Date is required').isDate();
