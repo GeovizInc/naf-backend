@@ -632,7 +632,6 @@ function updateVimeoCred(req, res) {
 function uploadImage(req, res){
     if (req.file && req.file.size > 0) {
         fs.exists(req.file.path, function(exists) {
-            console.log(req.file.path);
             if (!exists) {
                 return res.status(500).json({error: "Khm... Something happened with the file."});
             }
