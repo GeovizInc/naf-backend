@@ -22,3 +22,8 @@ config.pagination = {
 };
 
 config.zoomLimit = 15;
+// Upload folder
+config.upload = '/var/www/front-end/app/uploads/';
+// Upload files
+config.uploadfile = '/var/www/nowansr.com/front-end/app/uploads/files/';
+config.avatarExtensions = ['png', 'jpg', 'jpeg', 'gif'];

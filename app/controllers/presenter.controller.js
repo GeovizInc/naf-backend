@@ -9,6 +9,8 @@ var async = require('async');
 var constants = require('../utils/constants');
 var config = require('../config');
 var paginate = require('express-paginate');
+var fs = require('fs');
+
 
 module.exports.getPresenterList = getPresenterList;
 module.exports.getPresenter = getPresenter;
@@ -21,6 +23,7 @@ module.exports.getLecturesLimit = getLecturesLimit;
 module.exports.getCred = getCred;
 module.exports.updateZoomCred = updateZoomCred;
 module.exports.updateVimeoCred = updateVimeoCred;
+module.exports.uploadImage = uploadImage;
 
 function getPresenterList(req, res) {
     Presenter
@@ -330,7 +333,6 @@ function updatePresenter(req, res) {
                     $set: {
                         name: req.body.name,
                         description: req.body.description,
-                        imageLink: req.body.imageLink,
                         location: req.body.location,
                         vimeoToken: req.body.vimeoToken
                     }
@@ -451,7 +453,7 @@ function getLecturesLimit(req, res) {
 
     function findLectures(presenterId, callback) {
         Lecture
-            .find({presenter:presenterId, status: true})
+            .find({presenter:presenterId, status: true, time:{$gt:new Date()}})
             .exec(function(err,lectures) {
                 var lectureNumber = 0;
                 if(err) {
@@ -623,4 +625,51 @@ function updateVimeoCred(req, res) {
                 }
             )
     }
+
+
+}
+
+function uploadImage(req, res){
+    if (req.file && req.file.size > 0) {
+        fs.exists(req.file.path, function(exists) {
+            console.log(req.file.path);
+            if (!exists) {
+                return res.status(500).json({error: "Khm... Something happened with the file."});
+            }
+            var oname = req.file.originalname.split('.');
+            var extension = oname[oname.length - 1].toLowerCase();
+            console.log("name: " + oname + " extension: " + extension);
+            // Check for avatar extension
+            if (config.avatarExtensions.indexOf(extension) == -1) {
+                fs.unlinkSync(req.file.path);
+                return res.status(400).json({error: "Only image files are allowed."});
+            }
+            var tname = 'img-' + req.user._id+ '.' + extension;
+            fs.rename(req.file.path, config.upload + tname, function(err) {
+                if (err) {
+                    fs.unlinkSync(req.file.path);
+                    return res.status(500).json({error: err});
+                }
+                 //Update user's profile
+                Presenter.findById( req.params.presenter_id, function(err, user) {
+                    if (err) {
+                        return res.status(500).json({error: err});
+                    }
+                    if (!user) {
+                        return res.status(404).json({error: "User not found."});
+                    }
+                    user.imageLink = tname;
+                    user.save(function(err) {
+                        if (err) {
+                            return res.status(500).json({error: err});
+                        }
+                        return res.json({});
+                    });
+                });
+            });
+        });
+    } else {
+        return res.status(400).json({error: "No file uploaded."});
+    }
+
 }
