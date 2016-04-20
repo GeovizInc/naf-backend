@@ -18,11 +18,16 @@ app.listen(config.port, function() {
 
 routes.setup(app);
 
+app.use('/static', express.static(__dirname + '/public'));
+
+
 app.use(function (err, req, res, next) {
     if (err.name === 'UnauthorizedError') {
         res.status(401).send('invalid token...');
     }
     next();
 });
+
+
 
 module.exports = app;

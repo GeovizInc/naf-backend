@@ -22,5 +22,5 @@ config.pagination = {
 };
 
 config.zoomLimit = 15;
-config.upload = '/var/www/uploads/';
+config.upload = '/home/vagrant/www/public';
 config.avatarExtensions = ['png', 'jpg', 'jpeg', 'gif'];
