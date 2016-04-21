@@ -68,6 +68,7 @@ function getLectures(req, res) {
                         description: lecture.description,
                         time: lecture.time,
                         updatedAt: lecture.updatedAt,
+                        imageLink: lecture.imageLink,
                         teacher: {
                             _id: lecture.teacher._id,
                             name: lecture.teacher.name
