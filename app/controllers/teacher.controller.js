@@ -172,6 +172,7 @@ function getLectures(req, res) {
                         time: lecture.time,
                         zoomStartLink: lecture.zoomStartLink,
                         vimeoLink: lecture.vimeoLink,
+                        imageLink: lecture.imageLink,
                         course: {
                             _id: lecture.course._id,
                             name: lecture.course.name
