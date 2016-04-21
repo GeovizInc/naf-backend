@@ -219,6 +219,7 @@ function getLecture(req, res) {
                 _id: lecture.course._id,
                 name: lecture.course.name
             },
+            imageLink: lecture.imageLink,
             zoomLink: lecture.zoomLink,
             vimeoLink: lecture.vimeoLink
         };
