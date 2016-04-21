@@ -80,7 +80,6 @@ function updateLecture(req, res) {
                     message: 'Invalid user Id'
                 });
             }
-
             if(!presenter) {
                 Teacher
                     .findById(teacher._id)
@@ -91,7 +90,7 @@ function updateLecture(req, res) {
                             status: 500,
                             message: 'DB error'
                         });
-                        callback(null, presenter, lecture);
+                        callback(null, teacher.presenter, lecture);
                     })
             } else callback(null, presenter, lecture);
         });
