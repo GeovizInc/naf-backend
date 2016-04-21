@@ -7,12 +7,14 @@ var constants = require('../utils/constants');
 var config = require('../config');
 var paginate = require('express-paginate');
 var sanitize = require('mongo-sanitize');
+var UploadUtil = require('../utils/uploadUtil');
 
 module.exports.getCourse = getCourse;
 module.exports.getLectures = getLectures;
 module.exports.create = create;
 module.exports.update = update;
 module.exports.delete = deleteCourse;
+module.exports.uploadImage = uploadImage;
 
 function getLectures(req, res) {
     async.waterfall([
@@ -66,6 +68,7 @@ function getLectures(req, res) {
                         description: lecture.description,
                         time: lecture.time,
                         updatedAt: lecture.updatedAt,
+                        imageLink: lecture.imageLink,
                         teacher: {
                             _id: lecture.teacher._id,
                             name: lecture.teacher.name
@@ -420,4 +423,26 @@ function deleteCourse(req, res) {
                 callback(null, course);
             });
     }
+}
+
+function uploadImage(req, res){
+    if (!req.file || req.file.size <= 0) return res.status(400).json({error: "No file uploaded."});
+    console.log('courseid : '+req.params.course_id);
+    Course.findById( req.params.course_id, function(err, course) {
+        if(err){
+            console.log("Can not find Course");
+            return res.status(400).json({error:"Can not find Course"});
+        }
+        UploadUtil.upLoadImage(req.file, 'course' + course._id, function(err, savedFileName) {
+            if(err) {
+                return res.status(500).json({error: err});
+            }
+            course.imageLink = savedFileName;
+            course.save(function(err, savedCourse) {
+                return res.status(200).json({imageLink:savedFileName});
+            })
+        })
+    });
+
+
 }

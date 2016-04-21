@@ -6,11 +6,13 @@ var Zoom = require('../utils/zoom');
 var sanitize = require('mongo-sanitize');
 var async = require('async');
 var constants = require('../utils/constants');
+var UploadUtil = require('../utils/uploadUtil');
 
 module.exports.getLecture = getLecture;
 module.exports.create = createLecture;
 module.exports.update = updateLecture;
 module.exports.delete = deleteLecture;
+module.exports.uploadLectureImage = uploadLectureImage;
 
 function updateLecture(req, res) {
     async.waterfall([
@@ -216,6 +218,7 @@ function getLecture(req, res) {
                 _id: lecture.course._id,
                 name: lecture.course.name
             },
+            imageLink: lecture.imageLink,
             zoomLink: lecture.zoomLink,
             vimeoLink: lecture.vimeoLink
         };
@@ -474,4 +477,25 @@ function deleteLecture(req, res) {
 
             });
     }
+}
+
+
+function uploadLectureImage(req, res){
+    if (!req.file || req.file.size <= 0) return res.status(400).json({error: "No file uploaded."});
+    Lecture.findById( req.params.lecture_id, function(err, lecture) {
+        if(err){
+            return res.status(400).json({error:"Can not find Lecture"});
+        }
+        UploadUtil.upLoadImage(req.file, 'lecture' + lecture._id, function(err, savedFileName) {
+            if(err) {
+                return res.status(500).json({error: err});
+            }
+            lecture.imageLink = savedFileName;
+            lecture.save(function(err, savedLecture) {
+                return res.status(200).json({imageLink:savedFileName});
+            })
+        })
+    });
+
+
 }

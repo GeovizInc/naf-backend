@@ -8,14 +8,15 @@ var async = require('async');
 var constants = require('../utils/constants');
 var config = require('../config');
 var paginate = require('express-paginate');
+var UploadUtil = require('../utils/uploadUtil');
 
 module.exports.getTeacher = getTeacher;
 module.exports.getCourses = getCourses;
 module.exports.getLectures = getLectures;
 module.exports.update = update;
 module.exports.delete = deleteTeacher;
-
 module.exports.getVimeoCred = getVimeoCred;
+module.exports.uploadTeacherImage = uploadTeacherImage;
 
 function getCourses(req, res) {
     async.waterfall([
@@ -171,6 +172,7 @@ function getLectures(req, res) {
                         time: lecture.time,
                         zoomStartLink: lecture.zoomStartLink,
                         vimeoLink: lecture.vimeoLink,
+                        imageLink: lecture.imageLink,
                         course: {
                             _id: lecture.course._id,
                             name: lecture.course.name
@@ -465,4 +467,24 @@ function getVimeoCred(req, res) {
                 });
             });
     }
+}
+
+function uploadTeacherImage(req, res){
+    if (!req.file || req.file.size <= 0) return res.status(400).json({error: "No file uploaded."});
+    Teacher.findById( req.params.teacher_id, function(err, teacher) {
+        if(err){
+            return res.status(400).json({error:"Can not find Teacher"});
+        }
+        UploadUtil.upLoadImage(req.file, 'teacher' + teacher._id, function(err, savedFileName) {
+            if(err) {
+                return res.status(500).json({error: err});
+            }
+            teacher.imageLink = savedFileName;
+            teacher.save(function(err, savedTeacher) {
+                return res.status(200).json({imageLink:savedFileName});
+            })
+        })
+    });
+
+
 }
